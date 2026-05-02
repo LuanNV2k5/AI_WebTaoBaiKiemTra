@@ -84,18 +84,22 @@ export default function LoginPage() {
         {/* Logo & Header */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div style={{
-            fontSize: '2.5rem',
             marginBottom: '1rem',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '64px',
-            height: '64px',
-            backgroundColor: '#d1fae5',
+            width: '85px',
+            height: '85px',
+            backgroundColor: '#ffffff',
             borderRadius: '50%',
-            boxShadow: '0 4px 6px rgba(16, 185, 129, 0.2)'
+            overflow: 'hidden',
+            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)'
           }}>
-            ⚡
+            <img 
+              src="/logo.jpeg" 
+              alt="Logo Trắc nghiệm Toán học" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
           </div>
           <h1 className="text-gradient" style={{ fontSize: '1.85rem', fontWeight: 800, margin: '0 0 0.5rem 0', color: '#0f172a' }}>
             Trắc nghiệm Toán học
