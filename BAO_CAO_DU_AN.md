@@ -55,14 +55,22 @@ Hệ thống sử dụng **7 bảng dữ liệu** được thiết kế tối ư
 ### Bước 1: Backend
 ```bash
 cd backend
+```
+```bash
 pip install -r requirements.txt
+```
+```bash
 uvicorn app.main:app --reload
 ```
 
 ### Bước 2: Frontend
 ```bash
 cd frontend
+```
+```bash
 npm install
+```
+```bash
 npm run dev
 ```
 
