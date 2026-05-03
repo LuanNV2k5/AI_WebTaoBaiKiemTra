@@ -96,7 +96,6 @@ export default function ExamsPage() {
       {/* Header */}
       <div className="exams-header-section">
         <h1 className="exams-title">📚 Kho Đề Thi</h1>
-        <p className="exams-subtitle">Lựa chọn đề thi phù hợp để kiểm tra và nâng cao kiến thức của bạn.</p>
       </div>
 
       {/* Control Panel: Tabs & Search */}

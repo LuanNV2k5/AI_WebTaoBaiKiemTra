@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { examsApi, questionsApi, knowledgeTypesApi } from '../services/api';
+import '../index.css';
 
 const CHAPTERS = Array.from({ length: 8 }, (_, i) => ({ value: i + 1, label: `Chương ${i + 1}` }));
 
@@ -31,11 +32,11 @@ export default function CreateExamPage() {
     } catch (err) { alert("Lỗi tải ngân hàng câu hỏi"); }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (mode === 'manual') loadQuestions();
   }, [mode, qSearch]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     knowledgeTypesApi.list().then(r => setKtOptions(r.data));
   }, []);
 
@@ -82,147 +83,228 @@ export default function CreateExamPage() {
   const totalDiff = form.difficulty_distribution.easy + form.difficulty_distribution.medium + form.difficulty_distribution.hard;
 
   return (
-    <div className="page fade-in" style={{ maxWidth: 800 }}>
-      <div className="flex-between" style={{ marginBottom: '1.5rem' }}>
+    <div className="ce-container">
+      
+      {/* Header & Mode Switcher trải dài */}
+      <div className="ce-header-section">
         <div>
-          <h1 style={{ marginBottom: '0.25rem' }}>⚡ {mode === 'auto' ? 'Tạo đề tự động' : 'Tạo đề thủ công'}</h1>
-          <p className="text-secondary">{mode === 'auto' ? 'Thuật toán di truyền sẽ tối ưu bộ câu hỏi' : 'Tự tay chọn lọc từng câu hỏi từ ngân hàng'}</p>
+          <h1 className="ce-title">
+            {mode === 'auto' ? '⚡ Tạo đề tự động (AI)' : '📝 Tạo đề thủ công'}
+          </h1>
         </div>
-        <div className="flex gap-2">
-          <button className={`btn ${mode === 'auto' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setMode('auto')}>[Tự động]</button>
-          <button className={`btn ${mode === 'manual' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setMode('manual')}>[Thủ công]</button>
+        
+        <div className="ce-mode-switcher">
+          <button 
+            type="button" 
+            onClick={() => setMode('auto')} 
+            className={`ce-mode-btn ${mode === 'auto' ? 'active' : ''}`}
+          >
+            Chế độ Tự động
+          </button>
+          <button 
+            type="button" 
+            onClick={() => setMode('manual')} 
+            className={`ce-mode-btn ${mode === 'manual' ? 'active' : ''}`}
+          >
+            Chế độ Thủ công
+          </button>
         </div>
       </div>
 
       <form onSubmit={handleGenerate}>
-        {/* Basic info */}
-        <div className="card mb-3">
-          <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            [Cài đặt] Thông tin cơ bản
-          </h3>
-          <div className="form-group">
-            <label className="form-label">Tên đề thi *</label>
-            <input className="form-input" placeholder="VD: Kiểm tra 15 phút Chương 1-2" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
-          </div>
-          <div className="grid-3">
-            <div className="form-group">
-              <label className="form-label">Khối lớp</label>
-              <select className="form-input" value={form.grade} onChange={e => {
-                const g = Number(e.target.value);
-                setForm(f => ({ ...f, grade: g }));
-                setQSearch(qs => ({ ...qs, grade: g }));
-              }}>
-                <option value={10}>Khối 10</option>
-                <option value={11}>Khối 11</option>
-                <option value={12}>Khối 12</option>
-              </select>
+        
+        {/* SỬ DỤNG BỐ CỤC 2 CỘT */}
+        <div className="ce-layout-grid">
+          
+          {/* ================= CỘT TRÁI (THÔNG TIN CHÍNH) ================= */}
+          <div className="ce-left-column">
+            
+            {/* Basic info Card */}
+            <div className="ce-card">
+              <h3 className="ce-card-title">
+                <span style={{ color: 'var(--cerulean)' }}>⚙️</span> Thông tin cơ bản
+              </h3>
+              
+              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                <label className="form-label-navy">Tên đề thi <span style={{color: 'var(--jasper)'}}>*</span></label>
+                <input className="form-input-navy" placeholder="VD: Kiểm tra 15 phút Đại số Chương 1" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
+              </div>
+              
+              <div className="ce-grid-inputs">
+                <div>
+                  <label className="form-label-navy">Khối lớp</label>
+                  <select className="form-input-navy" value={form.grade} onChange={e => {
+                    const g = Number(e.target.value);
+                    setForm(f => ({ ...f, grade: g }));
+                    setQSearch(qs => ({ ...qs, grade: g }));
+                  }}>
+                    <option value={10}>Khối 10</option>
+                    <option value={11}>Khối 11</option>
+                    <option value={12}>Khối 12</option>
+                  </select>
+                </div>
+                {mode === 'auto' && (
+                  <div>
+                    <label className="form-label-navy">Số lượng câu hỏi</label>
+                    <input className="form-input-navy" type="number" min={5} max={60} value={form.total_questions} onChange={e => setForm(f => ({ ...f, total_questions: Number(e.target.value) }))} />
+                  </div>
+                )}
+                <div>
+                  <label className="form-label-navy">Thời gian (phút)</label>
+                  <input className="form-input-navy" type="number" min={5} max={180} value={form.time_limit} onChange={e => setForm(f => ({ ...f, time_limit: Number(e.target.value) }))} />
+                </div>
+              </div>
             </div>
-            {mode === 'auto' && (
-              <div className="form-group">
-                <label className="form-label">Số câu hỏi</label>
-                <input className="form-input" type="number" min={5} max={60} value={form.total_questions} onChange={e => setForm(f => ({ ...f, total_questions: Number(e.target.value) }))} />
+
+            {mode === 'auto' ? (
+              <>
+                {/* Chapters Card */}
+                <div className="ce-card">
+                  <h3 className="ce-card-title-sm">📚 Giới hạn Chương (Bỏ trống = Lấy tất cả)</h3>
+                  <div className="ce-toggle-group">
+                    {CHAPTERS.map(ch => (
+                      <button type="button" key={ch.value} onClick={() => toggleChapter(ch.value)} className={`ce-toggle-btn ${form.chapters.includes(ch.value) ? 'active' : ''}`}>
+                        {ch.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Knowledge types Card */}
+                <div className="ce-card">
+                  <h3 className="ce-card-title-sm">🧠 Loại kiến thức (Bỏ trống = Lấy tất cả)</h3>
+                  <div className="ce-toggle-group">
+                    {ktOptions.map(kt => (
+                      <button type="button" key={kt.id} onClick={() => toggleKT(kt.name)} className={`ce-toggle-btn ${form.knowledge_types.includes(kt.name) ? 'active' : ''}`}>
+                        {kt.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Manual Mode: Question Bank Card (Dàn đều toàn bộ không gian trái) */
+              <div className="ce-card">
+                <div className="ce-bank-header">
+                  <h3 className="ce-bank-title">
+                    🏦 Ngân hàng câu hỏi <span style={{ color: 'var(--cerulean)', fontSize: '1rem' }}>(Đã chọn: {selectedQuestionIds.length})</span>
+                  </h3>
+                  <select className="form-input-navy" style={{ width: 'auto', padding: '8px 16px' }} value={qSearch.chapter || ''} onChange={e => setQSearch({...qSearch, chapter: e.target.value ? Number(e.target.value) : null})}>
+                    <option value="">Lọc: Tất cả chương</option>
+                    {CHAPTERS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                </div>
+                
+                <div className="ce-table-container">
+                  {availableQuestions.length === 0 ? (
+                    <div className="ce-empty-state">
+                      <span className="ce-empty-icon">🔍</span>
+                      Không tìm thấy câu hỏi phù hợp.
+                    </div>
+                  ) : (
+                    <table className="ce-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '60px' }}>Chọn</th>
+                          <th>Nội dung câu hỏi</th>
+                          <th style={{ width: '120px' }}>Độ khó</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {availableQuestions.map(q => (
+                          <tr key={q.id} className={selectedQuestionIds.includes(q.id) ? 'selected' : ''} onClick={() => toggleQuestion(q.id)}>
+                            <td style={{ textAlign: 'center' }}>
+                              <input type="checkbox" checked={selectedQuestionIds.includes(q.id)} readOnly style={{ accentColor: 'var(--cerulean)', width: '16px', height: '16px', cursor: 'pointer' }} />
+                            </td>
+                            <td>
+                              <div className="ce-table-content">
+                                {q.content}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`score-badge ${q.difficulty === 1 ? 'score-good' : q.difficulty === 2 ? 'score-avg' : 'score-bad'}`}>
+                                {q.difficulty === 1 ? 'Dễ' : q.difficulty === 2 ? 'Trung bình' : 'Khó'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
               </div>
             )}
-            <div className="form-group">
-              <label className="form-label">Thời gian (phút)</label>
-              <input className="form-input" type="number" min={5} max={180} value={form.time_limit} onChange={e => setForm(f => ({ ...f, time_limit: Number(e.target.value) }))} />
-            </div>
           </div>
-        </div>
 
-        {mode === 'auto' ? (
-          <>
-            {/* Chapters */}
-            <div className="card mb-3">
-              <h3 style={{ marginBottom: '1rem' }}>📚 Chọn chương (bỏ trống = tất cả)</h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {CHAPTERS.map(ch => (
-                  <button type="button" key={ch.value} onClick={() => toggleChapter(ch.value)}
-                    className={`btn btn-sm ${form.chapters.includes(ch.value) ? 'btn-primary' : 'btn-secondary'}`}>
-                    {ch.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Knowledge types */}
-            <div className="card mb-3">
-              <h3 style={{ marginBottom: '1rem' }}>🧠 Loại kiến thức (bỏ trống = tất cả)</h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {ktOptions.map(kt => (
-                  <button type="button" key={kt.id} onClick={() => toggleKT(kt.name)}
-                    className={`btn btn-sm ${form.knowledge_types.includes(kt.name) ? 'btn-primary' : 'btn-secondary'}`}>
-                    {kt.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Difficulty */}
-            <div className="card mb-3">
-              <h3 style={{ marginBottom: '1rem' }}>🎯 Phân bổ độ khó (tổng = {totalDiff}%)</h3>
-              {totalDiff !== 100 && <div className="alert alert-warning" style={{ fontSize: '0.8rem', marginBottom: '1rem' }}>Tổng phải bằng 100%</div>}
-              {[['easy', 'Dễ', 'var(--success)'], ['medium', 'Trung bình', 'var(--warning)'], ['hard', 'Khó', 'var(--danger)']].map(([k, label, color]) => (
-                <div key={k} style={{ marginBottom: '1rem' }}>
-                  <div className="flex-between" style={{ marginBottom: '0.4rem' }}>
-                    <label className="form-label" style={{ margin: 0, color: color as string }}>{label}</label>
-                    <strong style={{ color: color as string }}>{form.difficulty_distribution[k as keyof typeof form.difficulty_distribution]}%</strong>
-                  </div>
-                  <input type="range" min={0} max={100} value={form.difficulty_distribution[k as keyof typeof form.difficulty_distribution]}
-                    onChange={e => setDiff(k, Number(e.target.value))}
-                    style={{ width: '100%', accentColor: color as string }} />
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className="card mb-3">
-            <div className="flex-between mb-3">
-              <h3>🏦 Ngân hàng câu hỏi (Đã chọn: {selectedQuestionIds.length})</h3>
-              <div className="flex gap-2">
-                <select className="form-input btn-sm" value={qSearch.chapter || ''} onChange={e => setQSearch({...qSearch, chapter: e.target.value ? Number(e.target.value) : null})}>
-                  <option value="">Tất cả chương</option>
-                  {CHAPTERS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                </select>
-              </div>
-            </div>
+          {/* ================= CỘT PHẢI (THANH ĐIỀU KHIỂN STICKY) ================= */}
+          <div className="ce-sticky-sidebar">
             
-            <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-              {availableQuestions.length === 0 ? (
-                <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Không tìm thấy câu hỏi phù hợp.</p>
-              ) : (
-                <table className="table" style={{ fontSize: '0.9rem' }}>
-                  <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 10 }}>
-                    <tr>
-                      <th style={{ width: '40px' }}>Chọn</th>
-                      <th>Nội dung</th>
-                      <th style={{ width: '100px' }}>Độ khó</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {availableQuestions.map(q => (
-                      <tr key={q.id} style={{ cursor: 'pointer' }} onClick={() => toggleQuestion(q.id)}>
-                        <td style={{ textAlign: 'center' }}>
-                          <input type="checkbox" checked={selectedQuestionIds.includes(q.id)} readOnly />
-                        </td>
-                        <td style={{ maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.content}</td>
-                        <td>
-                          <span className={`badge ${q.difficulty === 1 ? 'badge-success' : q.difficulty === 2 ? 'badge-warning' : 'badge-danger'}`}>
-                            {q.difficulty === 1 ? 'Dễ' : q.difficulty === 2 ? 'Trung bình' : 'Khó'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </div>
-        )}
+            {mode === 'auto' && (
+              <div className="ce-card">
+                <div className="ce-diff-header">
+                  <h3 className="ce-card-title-sm" style={{ margin: 0 }}>🎯 Phân bổ độ khó</h3>
+                  <span className={`ce-diff-badge ${totalDiff === 100 ? 'valid' : 'invalid'}`}>
+                    Tổng: {totalDiff}%
+                  </span>
+                </div>
+                
+                {totalDiff !== 100 && (
+                  <div className="ce-warning-alert">
+                    ⚠️ Tổng phải tròn 100%. Vui lòng kéo lại thanh trượt.
+                  </div>
+                )}
+                
+                {[['easy', 'Dễ', '#10b981'], ['medium', 'Trung bình', '#f59e0b'], ['hard', 'Khó', 'var(--jasper)']].map(([k, label, color]) => (
+                  <div key={k} className="ce-slider-group">
+                    <div className="ce-slider-header">
+                      <label className="ce-slider-label">{label}</label>
+                      <strong style={{ color: color as string }}>{form.difficulty_distribution[k as keyof typeof form.difficulty_distribution]}%</strong>
+                    </div>
+                    <input 
+                      type="range" min={0} max={100} 
+                      value={form.difficulty_distribution[k as keyof typeof form.difficulty_distribution]}
+                      onChange={e => setDiff(k, Number(e.target.value))}
+                      className="ce-slider-input"
+                      style={{ accentColor: color as string }} 
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
-        <button type="submit" className="btn btn-primary btn-lg w-full" disabled={loading || (mode === 'auto' && totalDiff !== 100) || (mode === 'manual' && selectedQuestionIds.length === 0)}>
-          {loading ? 'Đang tạo đề...' : mode === 'auto' ? '[Tạo đề tự động với AI]' : '[Lưu đề thi thủ công]'}
-        </button>
+            {/* Bảng tóm tắt & Nút Submit */}
+            <div className="ce-card" style={{ border: '2px solid var(--cerulean-fade)' }}>
+               <h3 className="ce-card-title-sm" style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '10px' }}>
+                 Tóm tắt thao tác
+               </h3>
+               <div style={{ marginBottom: '1.5rem', color: 'var(--text-gray)', fontSize: '0.95rem' }}>
+                 {mode === 'auto' ? (
+                   <ul style={{ paddingLeft: '1.2rem', lineHeight: '1.8' }}>
+                     <li>Sử dụng AI Tự động</li>
+                     <li>Tổng số: <strong>{form.total_questions}</strong> câu</li>
+                     <li>Thời gian: <strong>{form.time_limit}</strong> phút</li>
+                   </ul>
+                 ) : (
+                   <ul style={{ paddingLeft: '1.2rem', lineHeight: '1.8' }}>
+                     <li>Chọn thủ công</li>
+                     <li>Đã chọn: <strong style={{ color: selectedQuestionIds.length > 0 ? 'var(--cerulean)' : 'inherit'}}>{selectedQuestionIds.length}</strong> câu</li>
+                     <li>Thời gian: <strong>{form.time_limit}</strong> phút</li>
+                   </ul>
+                 )}
+               </div>
+
+              <button 
+                type="submit" 
+                disabled={loading || (mode === 'auto' && totalDiff !== 100) || (mode === 'manual' && selectedQuestionIds.length === 0)}
+                className="ce-submit-btn"
+              >
+                {loading ? 'Đang xử lý...' : mode === 'auto' ? '🚀 XÁC NHẬN TẠO ĐỀ' : '💾 LƯU ĐỀ THỦ CÔNG'}
+              </button>
+            </div>
+
+          </div>
+
+        </div>
       </form>
     </div>
   );
