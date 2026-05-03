@@ -4,6 +4,7 @@ import { examsApi } from '../services/api';
 import { ExamListItem } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { submissionsApi } from '../services/api';
+import '../index.css'; // Đảm bảo import CSS
 
 const DIFF_COLORS: Record<string, string> = { 'Toán': '#6366f1', 'Lý': '#06b6d4', 'Hóa': '#10b981' };
 
@@ -82,136 +83,130 @@ export default function ExamsPage() {
 
   const filtered = exams.filter(e => e.title.toLowerCase().includes(search.toLowerCase()));
 
-  if (loading) return <div className="loading-center"><div className="spinner"/><p className="text-secondary">Đang tải đề thi...</p></div>;
+  if (loading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
+      <div className="spinner" style={{ borderTopColor: '#2563eb' }}></div>
+      <p style={{ color: '#64748b', marginTop: '1rem' }}>Đang tải danh sách đề thi...</p>
+    </div>
+  );
 
   return (
-    <div className="page fade-in">
+    <div className="exams-container">
+      
       {/* Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1>📚 Danh sách đề thi</h1>
-        <p className="text-secondary mt-1">Chọn đề thi và bắt đầu kiểm tra kiến thức của bạn</p>
+      <div className="exams-header-section">
+        <h1 className="exams-title">📚 Kho Đề Thi</h1>
+        <p className="exams-subtitle">Lựa chọn đề thi phù hợp để kiểm tra và nâng cao kiến thức của bạn.</p>
       </div>
 
-      {/* Grade Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        {[null, 10, 11, 12].map(g => (
-          <button
-            key={g ?? 'all'}
-            onClick={() => setSelectedGrade(g)}
-            style={{
-              padding: '6px 16px',
-              border: '2px solid var(--green-main)',
-              borderRadius: '4px',
-              background: selectedGrade === g ? 'var(--green-dark)' : '#fff',
-              color: selectedGrade === g ? '#fff' : 'var(--green-dark)',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              fontSize: '13px'
-            }}
-          >
-            {g === null ? 'Tất cả' : `Khối ${g}`}
-          </button>
-        ))}
-      </div>
-
-      {/* Search + Stats */}
-      <div className="flex-between mb-3" style={{ flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
-          [Tìm] <input className="form-input" style={{ paddingLeft: '0.5rem', display: 'inline-block', width: '80%' }} placeholder="Tìm kiếm đề thi..." value={search} onChange={e => setSearch(e.target.value)} />
+      {/* Control Panel: Tabs & Search */}
+      <div className="exams-controls">
+        <div className="exams-tabs">
+          {[null, 10, 11, 12].map(g => (
+            <button
+              key={g ?? 'all'}
+              onClick={() => setSelectedGrade(g)}
+              className={`exams-tab-btn ${selectedGrade === g ? 'active' : ''}`}
+            >
+              {g === null ? 'Tất cả' : `Khối ${g}`}
+            </button>
+          ))}
         </div>
-        <span className="badge badge-accent">{filtered.length} đề thi</span>
+
+        <div className="exams-search">
+          <span className="exams-search-icon">🔍</span>
+          <input 
+            className="exams-search-input"
+            placeholder="Tìm kiếm đề thi..." 
+            value={search} 
+            onChange={e => setSearch(e.target.value)} 
+          />
+        </div>
       </div>
 
+      <div className="exams-count">
+        Hiển thị <strong>{filtered.length}</strong> đề thi phù hợp
+      </div>
+
+      {/* Grid Đề Thi */}
       {filtered.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-          <p>Chưa có đề thi nào. Admin hãy tạo đề mới!</p>
+        <div className="exams-empty">
+          <p style={{ fontSize: '1.1rem', color: '#64748b', margin: 0 }}>Chưa có đề thi nào trong danh mục này.</p>
+          {isAdmin && <p style={{ color: '#2563eb', fontWeight: 600, marginTop: '0.5rem' }}>Hãy chuyển sang tab Quản lý để tạo đề mới!</p>}
         </div>
       ) : (
-        <div className="grid-3">
+        <div className="exams-grid">
           {filtered.map((exam, i) => (
-            <Link key={exam.id} to={`/exam/${exam.id}`} 
-              className="card fade-in" style={{ textDecoration: 'none', animationDelay: `${i * 0.06}s`, display: 'flex', flexDirection: 'column', gap: '1rem', cursor: 'pointer' }}>
-              {/* Color bar */}
-              <div style={{ height: 4, borderRadius: 2, background: 'var(--gradient)', marginBottom: '0.25rem' }} />
+            <Link key={exam.id} to={`/exam/${exam.id}`} className="exam-card" style={{ animationDelay: `${i * 0.05}s` }}>
+              
+              <div className="exam-card-header">
+                <span className="exam-badge-grade">Khối {exam.grade || 10}</span>
+                <span className="exam-date">{new Date(exam.created_at).toLocaleDateString('vi-VN')}</span>
+              </div>
 
-              <div>
-                <div className="flex-between" style={{ marginBottom: '0.5rem' }}>
-                  <span className="badge badge-accent">Khối {exam.grade || 10}</span>
-                  <div className="flex gap-2" style={{ alignItems: 'center' }}>
-                    <span className="text-muted" style={{ fontSize: '0.75rem' }}>
-                      {new Date(exam.created_at).toLocaleDateString('vi-VN')}
-                    </span>
-                    {isAdmin && (
-                      <div className="flex gap-1">
-                        <button 
-                          className="btn btn-secondary btn-sm" 
-                          style={{ padding: '0.2rem', color: 'var(--accent)', background: 'transparent', border: 'none' }}
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleViewResults(exam.id, exam.title); }}
-                          title="Xem bảng điểm"
-                        >
-                          [Bảng điểm]
-                        </button>
-                        <button 
-                          className="btn btn-secondary btn-sm" 
-                          style={{ padding: '0.2rem', color: 'var(--warning)', background: 'transparent', border: 'none' }}
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditClick(exam); }}
-                          title="Sửa đề thi"
-                        >
-                          [Sửa]
-                        </button>
-                        <button 
-                          className="btn btn-secondary btn-sm" 
-                          style={{ padding: '0.2rem', color: 'var(--danger)', background: 'transparent', border: 'none' }}
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(exam.id); }}
-                          title="Xóa đề thi"
-                        >
-                          [Xóa]
-                        </button>
-                      </div>
-                    )}
+              <h3 className="exam-title">{exam.title}</h3>
+
+              <div className="exam-meta">
+                <span className="exam-meta-item">📝 <strong>{exam.total_questions}</strong> câu</span>
+                <span className="exam-meta-item">⏱️ <strong>{exam.time_limit}</strong> phút</span>
+              </div>
+
+              <div className="exam-footer">
+                {isAdmin && (
+                  <div className="exam-actions">
+                    <button 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleViewResults(exam.id, exam.title); }}
+                      title="Xem bảng điểm" className="action-btn btn-view"
+                    >📊</button>
+                    <button 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditClick(exam); }}
+                      title="Sửa đề thi" className="action-btn btn-edit"
+                    >✏️</button>
+                    <button 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(exam.id); }}
+                      title="Xóa đề thi" className="action-btn btn-delete"
+                    >🗑️</button>
                   </div>
+                )}
+                
+                <div className="exam-start-btn">
+                  Làm bài ngay →
                 </div>
-                <h3 style={{ marginBottom: '0.25rem', lineHeight: 1.4 }}>{exam.title}</h3>
-              </div>
-
-              <div className="flex gap-2" style={{ flexWrap: 'wrap' }}>
-                <span className="badge badge-muted">Số câu: {exam.total_questions}</span>
-                <span className="badge badge-muted">T.gian: {exam.time_limit} phút</span>
-              </div>
-
-              <div className="btn btn-primary btn-sm" style={{ marginTop: 'auto', justifyContent: 'center' }}>
-                Bắt đầu thi &raquo;
               </div>
             </Link>
           ))}
         </div>
       )}
+
+      {/* ----------------- MODALS ----------------- */}
+
       {/* Edit Modal */}
       {showEditModal && editingExam && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }} onClick={e => e.target === e.currentTarget && setShowEditModal(false)}>
-          <div className="card" style={{ width: '100%', maxWidth: 400 }}>
-            <div className="flex-between mb-3">
-              <h3>Sửa đề thi</h3>
-              <button className="btn btn-secondary btn-sm" onClick={() => setShowEditModal(false)}>[X]</button>
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowEditModal(false)}>
+          <div className="modal-box-sm">
+            <div className="modal-header">
+              <h3 className="modal-title">✏️ Sửa thông tin đề</h3>
+              <button className="modal-close" onClick={() => setShowEditModal(false)}>✖</button>
             </div>
+            
             <form onSubmit={handleEditSubmit}>
               <div className="form-group">
-                <label className="form-label">Tiêu đề đề thi</label>
-                <input className="form-input" required value={editingExam.title} onChange={e => setEditingExam({...editingExam, title: e.target.value})} />
+                <label className="form-label-navy">Tiêu đề đề thi</label>
+                <input required className="form-input-navy" value={editingExam.title} onChange={e => setEditingExam({...editingExam, title: e.target.value})} />
               </div>
               <div className="form-group">
-                <label className="form-label">Khối lớp</label>
-                <select className="form-input" value={editingExam.grade} onChange={e => setEditingExam({...editingExam, grade: Number(e.target.value)})}>
+                <label className="form-label-navy">Khối lớp</label>
+                <select className="form-input-navy" value={editingExam.grade} onChange={e => setEditingExam({...editingExam, grade: Number(e.target.value)})}>
                   <option value={10}>Khối 10</option>
                   <option value={11}>Khối 11</option>
                   <option value={12}>Khối 12</option>
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Thời gian (phút)</label>
-                <input className="form-input" type="number" required value={editingExam.time_limit} onChange={e => setEditingExam({...editingExam, time_limit: Number(e.target.value)})} />
+                <label className="form-label-navy">Thời gian (phút)</label>
+                <input type="number" className="form-input-navy" required value={editingExam.time_limit} onChange={e => setEditingExam({...editingExam, time_limit: Number(e.target.value)})} />
               </div>
-              <button type="submit" className="btn btn-primary w-full mt-2">
+              <button type="submit" className="btn-submit-navy" style={{ marginTop: '0.5rem' }}>
                 Lưu thay đổi
               </button>
             </form>
@@ -221,45 +216,51 @@ export default function ExamsPage() {
 
       {/* Results Modal */}
       {showResultsModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }} onClick={e => e.target === e.currentTarget && setShowResultsModal(false)}>
-          <div className="card" style={{ width: '100%', maxWidth: 700, maxHeight: '90vh', overflowY: 'auto' }}>
-            <div className="flex-between mb-3">
-              <h3>Bảng điểm: {selectedExamTitle}</h3>
-              <button className="btn btn-secondary btn-sm" onClick={() => setShowResultsModal(false)}>[X]</button>
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowResultsModal(false)}>
+          <div className="modal-box-lg">
+            
+            <div className="modal-header modal-header-lg">
+              <h3 className="modal-title">📊 Bảng điểm: <span style={{ color: '#2563eb' }}>{selectedExamTitle}</span></h3>
+              <button className="modal-close modal-close-bg" onClick={() => setShowResultsModal(false)}>✖</button>
             </div>
             
-            {examResults.length === 0 ? (
-              <p className="text-secondary" style={{ textAlign: 'center', padding: '2rem' }}>Chưa có học sinh nào nộp bài.</p>
-            ) : (
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Học sinh</th>
-                    <th>Điểm</th>
-                    <th>Thời gian</th>
-                    <th>Ngày nộp</th>
-                    <th>Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {examResults.map(r => (
-                    <tr key={r.id}>
-                      <td style={{ fontWeight: 600 }}>{r.student_name}</td>
-                      <td>
-                        <span className={`badge ${r.score >= 80 ? 'badge-success' : r.score >= 50 ? 'badge-warning' : 'badge-danger'}`}>
-                          {r.score.toFixed(1)}
-                        </span>
-                      </td>
-                      <td className="text-muted">{Math.floor(r.time_spent / 60)}p {r.time_spent % 60}s</td>
-                      <td style={{ fontSize: '0.8rem' }}>{new Date(r.submitted_at).toLocaleString('vi-VN')}</td>
-                      <td>
-                        <Link to={`/result/${r.id}`} className="btn btn-secondary btn-sm">[Chi tiết]</Link>
-                      </td>
+            <div className="results-body">
+              {examResults.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#64748b' }}>
+                  <p style={{ fontSize: '2rem', margin: '0 0 1rem 0' }}>📭</p>
+                  <p style={{ margin: 0 }}>Chưa có học sinh nào nộp bài thi này.</p>
+                </div>
+              ) : (
+                <table className="results-table">
+                  <thead>
+                    <tr>
+                      <th>Học sinh</th>
+                      <th>Điểm</th>
+                      <th>Thời gian</th>
+                      <th>Ngày nộp</th>
+                      <th>Thao tác</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                  </thead>
+                  <tbody>
+                    {examResults.map((r) => (
+                      <tr key={r.id}>
+                        <td style={{ fontWeight: 600, color: '#0f172a' }}>{r.student_name}</td>
+                        <td>
+                          <span className={`score-badge ${r.score >= 80 ? 'score-good' : r.score >= 50 ? 'score-avg' : 'score-bad'}`}>
+                            {r.score.toFixed(1)}
+                          </span>
+                        </td>
+                        <td style={{ color: '#64748b', fontSize: '0.9rem' }}>{Math.floor(r.time_spent / 60)}p {r.time_spent % 60}s</td>
+                        <td style={{ color: '#64748b', fontSize: '0.85rem' }}>{new Date(r.submitted_at).toLocaleString('vi-VN')}</td>
+                        <td>
+                          <Link to={`/result/${r.id}`} style={{ padding: '6px 12px', background: '#f1f5f9', color: '#2563eb', textDecoration: 'none', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600 }}>Chi tiết</Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         </div>
       )}
