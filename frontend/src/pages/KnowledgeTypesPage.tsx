@@ -66,7 +66,7 @@ export default function KnowledgeTypesPage() {
 
   return (
     <div className="kt-container">
-      <h1 className="kt-title">🏷️ Quản lý loại kiến thức</h1>
+      <h1 className="kt-title">Quản lý loại kiến thức</h1>
 
       <div className="kt-layout-grid">
         

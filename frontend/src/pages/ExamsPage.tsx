@@ -95,7 +95,7 @@ export default function ExamsPage() {
       
       {/* Header */}
       <div className="exams-header-section">
-        <h1 className="exams-title">📚 Kho Đề Thi</h1>
+        <h1 className="exams-title">Kho Đề Thi</h1>
       </div>
 
       {/* Control Panel: Tabs & Search */}

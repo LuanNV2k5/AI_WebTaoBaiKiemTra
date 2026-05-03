@@ -18,7 +18,7 @@ export default function Navbar() {
         
         {/* Logo / Brand */}
         <NavLink to="/" className="navbar-brand-navy">
-          <span>⚡</span> Trắc nghiệm Toán học
+          Trắc nghiệm Toán học
         </NavLink>
 
         {/* Navigation Links */}

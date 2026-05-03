@@ -137,8 +137,7 @@ export default function StudentsPage() {
         {/* Header */}
         <div className="std-header">
           <div>
-            <h1 className="std-title">👨‍🎓 Quản lý học sinh</h1>
-            <p className="std-subtitle">Tổng cộng <strong>{students.length}</strong> học sinh trong hệ thống</p>
+            <h1 className="std-title">Quản lý học sinh</h1>
           </div>
           <div className="std-actions">
             <button className="std-btn-excel" onClick={() => setShowExcelModal(true)}>
