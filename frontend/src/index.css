@@ -1,214 +1,315 @@
 /* =========================================
-   THEME XANH NAVY SANG TRỌNG - TRANG LOGIN
+   THEME XANH NAVY SANG TRỌNG - TRANG EXAMS
    ========================================= */
 
-.login-container {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+.exams-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
 }
 
-/* --- CỘT TRÁI (Branding) --- */
-.login-left-col {
-  flex: 1;
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-  color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  text-align: center;
-  position: relative;
-}
-
-.login-logo-container {
-  width: 240px;
-  height: 240px;
-  background-color: #ffffff;
-  border-radius: 24px;
-  padding: 15px;
-  margin-bottom: 2.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-.login-heading-left {
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin: 0 0 1rem 0;
-  color: #ffffff;
-  letter-spacing: -0.5px;
-}
-
-.login-text-left {
-  font-size: 1.1rem;
-  color: #e2e8f0;
-  max-width: 85%;
-  line-height: 1.6;
-  opacity: 0.9;
-}
-
-/* --- CỘT PHẢI (Form) --- */
-.login-right-col {
-  flex: 1;
-  background-color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  overflow-y: auto;
-}
-
-.login-form-wrapper {
-  width: 100%;
-  max-width: 420px;
-  margin: auto;
-}
-
-.login-heading-right {
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
-  color: #1e293b;
-  text-align: center;
-  letter-spacing: -0.5px;
-}
-
-.login-text-right {
-  text-align: center;
-  color: #64748b;
-  margin-bottom: 2.5rem;
-  font-size: 0.95rem;
-}
-
-/* --- TABS --- */
-.login-tab-container {
-  display: flex;
-  background: #f1f5f9;
-  border-radius: 12px;
-  padding: 6px;
+/* Header */
+.exams-header-section {
   margin-bottom: 2rem;
 }
-
-.login-tab-btn {
-  flex: 1;
-  padding: 12px 0;
-  border: none;
-  cursor: pointer;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-  background: transparent;
+.exams-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.5rem 0;
+}
+.exams-subtitle {
   color: #64748b;
+  font-size: 1rem;
+  margin: 0;
 }
 
-.login-tab-btn.active {
-  background: #ffffff;
-  color: #2563eb;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-/* --- FORM ELEMENTS --- */
-.form-group-flex {
+/* Control Panel (Tabs & Search) */
+.exams-controls {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  background: #ffffff;
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  border: 1px solid #f1f5f9;
 }
 
-.form-label-navy {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 0.85rem;
+.exams-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.exams-tab-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 20px;
+  background: #f8fafc;
+  color: #475569;
   font-weight: 600;
-  color: #334155;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+.exams-tab-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }
 
-.form-input-navy {
+.exams-search {
+  position: relative;
+  flex: 1 1 300px;
+  max-width: 400px;
+}
+.exams-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+.exams-search-input {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
+  padding: 12px 16px 12px 40px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
   background-color: #f8fafc;
   color: #0f172a;
   font-size: 0.95rem;
   outline: none;
   box-sizing: border-box;
-  transition: all 0.2s ease;
 }
 
-.form-input-navy:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+/* Danh sách đề thi */
+.exams-count {
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: #64748b;
 }
 
-.input-with-icon {
-  position: relative;
+.exams-empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px dashed #cbd5e1;
 }
 
-.input-with-icon .form-input-navy {
-  padding-right: 3.5rem;
+.exams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
 }
 
-.btn-toggle-pw {
-  position: absolute;
-  right: 12px;
-  top: 36px;
-  background: none;
-  border: none;
-  color: #2563eb;
-  font-weight: 600;
-  font-size: 0.85rem;
+/* Thẻ Card Đề thi */
+.exam-card {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f1f5f9;
+  transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
-  padding: 4px;
+  animation: fadeIn 0.4s ease forwards;
+}
+.exam-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-.btn-submit-navy {
-  width: 100%;
-  margin-top: 1.5rem;
-  padding: 15px;
-  border-radius: 10px;
-  border: none;
-  background: #2563eb;
-  color: #fff;
-  font-size: 1.05rem;
+.exam-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+.exam-badge-grade {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
   font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-  transition: background 0.2s;
-  letter-spacing: 0.5px;
+}
+.exam-date {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
-.btn-submit-navy:disabled {
-  background: #93c5fd;
-  cursor: not-allowed;
-  box-shadow: none;
+.exam-title {
+  font-size: 1.2rem;
+  color: #0f172a;
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+  flex: 1;
 }
 
-/* Radio buttons tùy chỉnh cho phần Chọn Vai Trò */
-.role-radio-group {
+.exam-meta {
   display: flex;
   gap: 1.5rem;
-  margin-top: 12px;
+  margin-bottom: 1.5rem;
 }
-
-.role-radio-label {
+.exam-meta-item {
+  font-size: 0.85rem;
+  color: #64748b;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.95rem;
-  color: #0f172a;
-  cursor: pointer;
+  gap: 4px;
 }
 
-.role-radio-input {
-  accent-color: #2563eb;
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
+.exam-footer {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1rem;
+  margin-top: auto;
 }
+
+/* Nút Action Admin */
+.exam-actions {
+  display: flex;
+  gap: 8px;
+}
+.action-btn {
+  padding: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn-view { background: #dbeafe; color: #1e40af; }
+.btn-edit { background: #fef3c7; color: #b45309; }
+.btn-delete { background: #fee2e2; color: #b91c1c; }
+
+.exam-start-btn {
+  margin-left: auto;
+  padding: 8px 16px;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.exam-start-btn:hover { background: #1d4ed8; }
+
+/* ================= MODALS ================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-box-sm {
+  background: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-box-lg {
+  background: #ffffff;
+  width: 100%;
+  max-width: 750px;
+  max-height: 85vh;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.modal-header-lg {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  margin-bottom: 0;
+}
+.modal-title {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #0f172a;
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #94a3b8;
+  cursor: pointer;
+}
+.modal-close-bg {
+  background: #e2e8f0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+}
+
+/* Bảng điểm modal */
+.results-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.results-table th {
+  padding: 12px 16px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+.results-table th:first-child { border-radius: 8px 0 0 8px; }
+.results-table th:last-child { border-radius: 0 8px 8px 0; text-align: right; }
+
+.results-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.results-table tr:last-child td { border-bottom: none; }
+
+.score-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+.score-good { background: #dcfce7; color: #166534; }
+.score-avg { background: #fef3c7; color: #92400e; }
+.score-bad { background: #fee2e2; color: #991b1b; }
