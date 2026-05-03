@@ -200,7 +200,7 @@ body {
 .login-text-right {
   text-align: center;
   color: var(--text-gray);
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
   font-size: 0.95rem;
 }
 .login-tab-container {
@@ -208,7 +208,7 @@ body {
   background: var(--bg-app);
   border-radius: 12px;
   padding: 6px;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 .login-tab-btn {
   flex: 1;
@@ -227,14 +227,22 @@ body {
   color: var(--cerulean);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
+
+/* --- Form Groups & Inputs --- */
 .form-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
+/* Class mới để chia 2 cột nằm ngang sạch sẽ */
 .form-group-flex {
   display: flex;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
+.form-group-flex .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
 .form-label-navy {
   display: block;
   margin-bottom: 8px;
@@ -244,7 +252,7 @@ body {
 }
 .form-input-navy {
   width: 100%;
-  padding: 14px 16px;
+  padding: 12px 16px;
   border-radius: 10px;
   border: 1px solid var(--border-light);
   background-color: var(--bg-app);
@@ -258,6 +266,8 @@ body {
   background-color: var(--surface);
   box-shadow: 0 0 0 3px var(--cerulean-fade);
 }
+
+/* --- Mật khẩu --- */
 .input-with-icon {
   position: relative;
 }
@@ -276,9 +286,11 @@ body {
   cursor: pointer;
   padding: 4px;
 }
+
+/* --- Nút Submit --- */
 .btn-submit-navy {
   width: 100%;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   padding: 15px;
   border-radius: 10px;
   border: none;
@@ -299,17 +311,37 @@ body {
   cursor: not-allowed;
   box-shadow: none;
 }
-.role-radio-group {
+
+/* --- Thẻ chọn Vai trò (Role Cards) --- */
+.role-card-group {
   display: flex;
-  gap: 1.5rem;
-  margin-top: 12px;
+  gap: 1rem;
 }
-.role-radio-label {
+.role-card {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.95rem;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-light);
+  background: var(--bg-app);
+}
+.role-card.active {
+  border: 2px solid var(--cerulean);
+  background: var(--cerulean-fade);
+}
+.role-card-text {
+  font-weight: 500;
+  color: var(--text-dark);
+  transition: all 0.2s ease;
+}
+.role-card.active .role-card-text {
+  font-weight: 700;
+  color: var(--cerulean);
 }
 .role-radio-input {
   accent-color: var(--cerulean);
@@ -1104,6 +1136,379 @@ body {
   cursor: not-allowed;
 }
 .qb-page-info {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-gray);
+  background: var(--bg-app);
+  padding: 6px 16px;
+  border-radius: 20px;
+}
+
+/* =========================================
+   8. TRANG LOẠI KIẾN THỨC (KNOWLEDGE TYPES)
+   ========================================= */
+.kt-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.kt-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0 0 2rem 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Bố cục chia cột co giãn theo % */
+.kt-layout-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.kt-left-col, .kt-right-col {
+  width: 100%; /* Mặc định 1 cột cho Mobile/Tablet */
+}
+
+@media (min-width: 992px) {
+  .kt-left-col {
+    width: calc(35% - 0.75rem); /* Cột Form chiếm 35% */
+    position: sticky;
+    top: 85px; /* Ghim cố định form khi cuộn danh sách */
+  }
+  .kt-right-col {
+    width: calc(65% - 0.75rem); /* Cột Danh sách chiếm 65% */
+  }
+}
+
+.kt-card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  border: 1px solid var(--border-light);
+}
+
+.kt-card-title {
+  font-size: 1.2rem;
+  color: var(--text-dark);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 1rem;
+}
+
+.kt-form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 1.5rem;
+}
+
+.btn-cancel-gray {
+  flex: 1;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-cancel-gray:hover {
+  background: #e2e8f0;
+  color: var(--text-dark);
+}
+
+/* Table */
+.kt-table-wrap {
+  overflow-x: auto;
+}
+.kt-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+}
+.kt-table th {
+  padding: 12px 16px;
+  background: var(--bg-app);
+  color: var(--text-gray);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-light);
+}
+.kt-table td {
+  padding: 16px;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+.kt-table tr:last-child td { border-bottom: none; }
+.kt-table tr:hover { background: var(--cerulean-fade); }
+
+.kt-name-text {
+  font-weight: 600;
+  color: var(--cerulean);
+  background: var(--cerulean-fade);
+  padding: 6px 12px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.text-right {
+  text-align: right;
+}
+.flex-right {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* =========================================
+   9. TRANG QUẢN LÝ HỌC SINH (STUDENTS PAGE)
+   ========================================= */
+.std-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+/* --- Header --- */
+.std-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.std-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0 0 0.25rem 0;
+}
+.std-subtitle {
+  color: var(--text-gray);
+  margin: 0;
+  font-size: 0.95rem;
+}
+.std-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.std-btn-excel {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: var(--surface);
+  color: var(--text-dark);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.std-btn-excel:hover {
+  background: var(--bg-app);
+  border-color: var(--cerulean);
+  color: var(--cerulean);
+}
+.std-btn-add {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--cerulean);
+  color: var(--surface);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(18, 72, 116, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.std-btn-add:hover {
+  background: var(--cerulean-light);
+  transform: translateY(-2px);
+}
+
+/* --- Tabs Khối Lớp --- */
+.std-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.std-tab-btn {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: none;
+  background: var(--surface);
+  color: var(--text-gray);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  border: 1px solid var(--border-light);
+}
+.std-tab-btn.active {
+  background: var(--cerulean);
+  color: var(--surface);
+  border-color: var(--cerulean);
+  box-shadow: 0 4px 6px rgba(18, 72, 116, 0.2);
+}
+
+/* --- Bảng Danh Sách --- */
+.std-card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  border: 1px solid var(--border-light);
+}
+.std-table-wrap {
+  overflow-x: auto;
+}
+.std-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+  min-width: 800px;
+}
+.std-table th {
+  padding: 16px;
+  background: var(--bg-app);
+  color: var(--text-gray);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+.std-table td {
+  padding: 16px;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+.std-table tr:last-child td { border-bottom: none; }
+.std-table tr:hover { background: var(--cerulean-fade); }
+
+/* Badges */
+.std-badge-grade { 
+  background: var(--cerulean-fade); 
+  color: var(--cerulean); 
+  padding: 4px 10px; 
+  border-radius: 6px; 
+  font-size: 0.8rem; 
+  font-weight: 700; 
+  white-space: nowrap;
+}
+.std-badge-username { 
+  background: #f1f5f9; 
+  color: #475569; 
+  padding: 4px 10px; 
+  border-radius: 6px; 
+  font-size: 0.8rem; 
+  font-weight: 600; 
+}
+.std-badge-count { 
+  background: #fef3c7; 
+  color: #b45309; 
+  padding: 4px 10px; 
+  border-radius: 6px; 
+  font-size: 0.8rem; 
+  font-weight: 700; 
+}
+
+/* Nút Xem chi tiết dạng link */
+.btn-view-link {
+  padding: 6px 12px;
+  background: var(--bg-app);
+  color: var(--cerulean);
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid var(--border-light);
+}
+.btn-view-link:hover {
+  background: var(--cerulean-fade);
+  border-color: var(--cerulean);
+}
+
+/* --- Khối Upload Excel --- */
+.std-excel-zone {
+  border: 2px dashed var(--border-light);
+  padding: 2rem;
+  text-align: center;
+  border-radius: 12px;
+  background: var(--bg-app);
+  transition: border-color 0.2s;
+}
+.std-excel-zone:hover {
+  border-color: var(--cerulean);
+}
+.std-alert-info {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #0284c7;
+  line-height: 1.5;
+}
+/* --- Phân trang Học sinh (Pagination) --- */
+.std-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-light);
+  background: var(--surface);
+  border-radius: 0 0 16px 16px;
+}
+.std-page-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: var(--surface);
+  color: var(--text-dark);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.std-page-btn:hover:not(:disabled) {
+  background: var(--cerulean-fade);
+  color: var(--cerulean);
+  border-color: var(--cerulean);
+}
+.std-page-btn:disabled {
+  color: #94a3b8;
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+.std-page-info {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-gray);
