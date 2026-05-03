@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { examsApi, submissionsApi } from '../services/api';
 import { Exam, Question } from '../types';
+import '../index.css';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
@@ -36,7 +37,10 @@ export default function TakeExamPage() {
         time_spent: Math.floor((Date.now() - startTime.current) / 1000)
       });
       navigate(`/result/${res.data.id}`);
-    } catch { alert('Lỗi nộp bài!'); setSubmitting(false); }
+    } catch { 
+      alert('Lỗi nộp bài!'); 
+      setSubmitting(false); 
+    }
   }, [exam, answers, submitting, navigate]);
 
   useEffect(() => {
@@ -49,142 +53,189 @@ export default function TakeExamPage() {
       });
     }, 1000);
     return () => clearInterval(timerRef.current);
-  }, [started]);
+  }, [started, exam, handleSubmit]);
 
-  if (loading) return <div className="loading-center"><div className="spinner"/></div>;
-  if (!exam) return <div className="page"><div className="alert alert-danger">Không tìm thấy đề thi.</div></div>;
+  if (loading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
+      <div className="spinner"></div>
+      <p style={{ color: 'var(--text-gray)', marginTop: '1rem' }}>Đang tải đề thi...</p>
+    </div>
+  );
+  
+  if (!exam) return (
+    <div className="te-start-wrapper fade-in">
+      <div className="te-start-card" style={{ border: '1px solid var(--jasper)', background: 'var(--jasper-fade)' }}>
+        <h3 style={{ color: 'var(--jasper)' }}>Không tìm thấy đề thi.</h3>
+      </div>
+    </div>
+  );
 
+  // --- MÀN HÌNH BẮT ĐẦU ---
   if (!started) {
     return (
-      <div className="page flex-center fade-in" style={{ flexDirection: 'column', gap: '2rem' }}>
-        <div className="card" style={{ maxWidth: 480, width: '100%', textAlign: 'center', padding: '3rem' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📝</div>
-          <h2 style={{ marginBottom: '0.5rem' }}>{exam.title}</h2>
-          <p className="text-secondary mb-3">{exam.description}</p>
-          <div className="grid-2 mb-3" style={{ gap: '0.75rem' }}>
-            <div className="stat-card" style={{ textAlign: 'center' }}>
-              <div className="stat-value text-accent">{exam.total_questions}</div>
-              <div className="stat-label">Câu hỏi</div>
+      <div className="te-start-wrapper fade-in">
+        <div className="te-start-card">
+          <div className="te-start-icon">📝</div>
+          <h2 className="te-start-title">{exam.title}</h2>
+          <p className="text-secondary">{exam.description}</p>
+          
+          <div className="te-stat-group">
+            <div className="te-stat-box">
+              <div className="te-stat-val">{exam.total_questions}</div>
+              <div className="te-stat-lbl">Câu hỏi</div>
             </div>
-            <div className="stat-card" style={{ textAlign: 'center' }}>
-              <div className="stat-value text-warning">{exam.time_limit}</div>
-              <div className="stat-label">Phút</div>
+            <div className="te-stat-box">
+              <div className="te-stat-val" style={{ color: '#f59e0b' }}>{exam.time_limit}</div>
+              <div className="te-stat-lbl">Phút</div>
             </div>
           </div>
-          <div className="alert alert-info" style={{ textAlign: 'left', fontSize: '0.85rem' }}>
-            ⚠️ Hãy trả lời tất cả câu hỏi trước khi hết giờ. Bài sẽ tự động nộp khi hết thời gian.
+          
+          <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '12px 16px', borderRadius: '8px', fontSize: '0.85rem', textAlign: 'left', marginBottom: '1.5rem', borderLeft: '4px solid #0284c7' }}>
+            <strong>Lưu ý:</strong> Hãy hoàn thành bài trước khi hết giờ. Hệ thống sẽ tự động thu bài khi thời gian đếm ngược kết thúc.
           </div>
-          <button className="btn btn-primary btn-lg w-full" onClick={() => setStarted(true)}>
+          
+          <button className="te-btn-primary" style={{ width: '100%', fontSize: '1.1rem', padding: '14px' }} onClick={() => setStarted(true)}>
             🚀 Bắt đầu làm bài
           </button>
         </div>
       </div>
     );
   }
+
+  // Màn hình lỗi nếu đề chưa có câu hỏi
   if (exam.questions.length === 0) {
     return (
-      <div className="page flex-center fade-in">
-        <div className="card text-center" style={{ padding: '3rem' }}>
-          <h3>⚠️ Đề thi chưa có câu hỏi</h3>
-          <p className="text-secondary">Vui lòng liên hệ Admin để cập nhật nội dung đề thi.</p>
-          <button className="btn btn-secondary mt-3" onClick={() => navigate('/exams')}>Quay lại</button>
+      <div className="te-start-wrapper fade-in">
+        <div className="te-start-card">
+          <div className="te-start-icon">⚠️</div>
+          <h3 style={{ marginBottom: '1rem' }}>Đề thi chưa có câu hỏi</h3>
+          <p className="text-secondary" style={{ marginBottom: '1.5rem' }}>Vui lòng liên hệ Giáo viên/Admin để cập nhật nội dung đề thi.</p>
+          <button className="te-btn-outline" onClick={() => navigate('/exams')}>Quay lại danh sách</button>
         </div>
       </div>
     );
   }
 
+  // --- GIAO DIỆN LÀM BÀI CHÍNH ---
   const q = exam.questions[currentIdx];
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, '0');
   const ss = String(timeLeft % 60).padStart(2, '0');
-  const isDanger = timeLeft < 300;
+  const isDanger = timeLeft < 300; // Đỏ khi còn dưới 5 phút
   const opts = [q.option_a, q.option_b, q.option_c, q.option_d];
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      {/* Top bar */}
-      <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div>
-          <span className="text-secondary" style={{ fontSize: '0.85rem' }}>{exam.title}</span>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Câu {currentIdx + 1}/{exam.total_questions}</div>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-app)' }}>
+      
+      {/* Top bar (Sticky) */}
+      <div className="te-topbar">
+        <div className="te-topbar-info">
+          <span className="te-topbar-title">{exam.title}</span>
+          <span className="te-topbar-progress">Tiến độ: Đã làm {Object.keys(answers).length}/{exam.total_questions} câu</span>
         </div>
-        <div className={`timer ${isDanger ? 'danger' : ''}`}>
-          [Thời gian] {mm}:{ss}
+        <div className={`te-timer ${isDanger ? 'danger' : ''}`}>
+          ⏱ {mm}:{ss}
         </div>
-        <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
-          {submitting ? 'Đang nộp...' : '[Nộp bài]'}
+        <button className="te-btn-submit" onClick={handleSubmit} disabled={submitting}>
+          {submitting ? 'Đang nộp...' : 'Nộp bài ngay'}
         </button>
       </div>
 
-      <div className="page" style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: '1.5rem', paddingTop: '1.5rem' }}>
-        {/* Question area */}
-        <div className="fade-in" key={currentIdx}>
-          <div className="card" style={{ marginBottom: '1rem' }}>
-            <div className="flex-between mb-2">
-              <span className="badge badge-accent">Câu {currentIdx + 1}</span>
-              <div className="flex gap-1">
-                <span className={`badge diff-${q.difficulty}`}>{q.difficulty === 1 ? 'Dễ' : q.difficulty === 2 ? 'Trung bình' : 'Khó'}</span>
-                <span className="badge badge-muted">{q.chapter_name || `Chương ${q.chapter}`}</span>
+      {/* Main Layout */}
+      <div className="te-layout fade-in">
+        
+        {/* Khung bên trái: Câu hỏi & Đáp án */}
+        <div className="te-main">
+          <div className="te-q-card">
+            <div className="te-q-header">
+              <span className="exam-badge-grade" style={{ fontSize: '0.9rem', padding: '6px 14px' }}>
+                Câu hỏi {currentIdx + 1}
+              </span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <span className={`score-badge ${q.difficulty === 1 ? 'score-good' : q.difficulty === 2 ? 'score-avg' : 'score-bad'}`}>
+                  {q.difficulty === 1 ? 'Mức độ: Dễ' : q.difficulty === 2 ? 'Mức độ: Vừa' : 'Mức độ: Khó'}
+                </span>
+                <span className="score-badge" style={{ background: '#f1f5f9', color: '#475569' }}>
+                  {q.chapter_name || `Chương ${q.chapter}`}
+                </span>
               </div>
             </div>
-            <p style={{ fontSize: '1.05rem', lineHeight: 1.7, fontWeight: 500 }}>{q.content}</p>
-          </div>
+            
+            <p className="te-q-text">{q.content}</p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {opts.map((opt, i) => {
-              const letter = LETTERS[i];
-              const isSelected = answers[String(q.id)] === letter;
-              return (
-                <div key={i} className={`answer-option${isSelected ? ' selected' : ''}`}
-                  onClick={() => setAnswers(a => ({ ...a, [String(q.id)]: letter }))}>
-                  <div className="answer-letter">{letter}</div>
-                  <span style={{ flex: 1, lineHeight: 1.6 }}>{opt}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex-between mt-3">
-            <button className="btn btn-secondary" onClick={() => setCurrentIdx(i => i - 1)} disabled={currentIdx === 0}>
-              &laquo; Câu trước
-            </button>
-            <span className="text-muted" style={{ fontSize: '0.85rem' }}>{Object.keys(answers).length}/{exam.total_questions} đã trả lời</span>
-            {currentIdx < exam.total_questions - 1 ? (
-              <button className="btn btn-primary" onClick={() => setCurrentIdx(i => i + 1)}>
-                Câu tiếp &raquo;
+            <div className="te-opt-list">
+              {opts.map((opt, i) => {
+                const letter = LETTERS[i];
+                const isSelected = answers[String(q.id)] === letter;
+                return (
+                  <div 
+                    key={i} 
+                    className={`te-opt-row ${isSelected ? 'selected' : ''}`}
+                    onClick={() => setAnswers(a => ({ ...a, [String(q.id)]: letter }))}
+                  >
+                    <div className="te-opt-letter">{letter}</div>
+                    <span className="te-opt-text">{opt}</span>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Buttons Previous / Next */}
+            <div className="te-nav-actions">
+              <button className="te-btn-outline" onClick={() => setCurrentIdx(i => i - 1)} disabled={currentIdx === 0}>
+                &laquo; Câu trước
               </button>
-            ) : (
-              <button className="btn btn-success" onClick={handleSubmit} disabled={submitting}>
-                [Nộp bài]
-              </button>
-            )}
+              
+              {currentIdx < exam.total_questions - 1 ? (
+                <button className="te-btn-primary" onClick={() => setCurrentIdx(i => i + 1)}>
+                  Câu tiếp &raquo;
+                </button>
+              ) : (
+                <button className="te-btn-submit" onClick={handleSubmit} disabled={submitting}>
+                  Hoàn tất & Nộp bài
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Question navigator */}
-        <div>
-          <div className="card">
-            <h4 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>Bảng câu hỏi</h4>
-            <div className="q-nav">
-              {exam.questions.map((_, i) => (
-                <button key={i} className={`q-nav-btn ${i === currentIdx ? 'current' : answers[String(exam.questions[i].id)] ? 'answered' : ''}`}
-                  onClick={() => setCurrentIdx(i)}>{i + 1}</button>
-              ))}
+        {/* Khung bên phải: Bảng số câu (Sidebar) */}
+        <div className="te-sidebar">
+          <div className="te-q-card" style={{ padding: '1.5rem' }}>
+            <h4 style={{ margin: '0 0 1.25rem 0', color: 'var(--text-dark)' }}>Danh sách câu hỏi</h4>
+            
+            <div className="te-nav-grid">
+              {exam.questions.map((qItem, i) => {
+                const isCurrent = i === currentIdx;
+                const isAnswered = !!answers[String(qItem.id)];
+                let btnClass = 'te-nav-btn';
+                if (isCurrent) btnClass += ' current';
+                else if (isAnswered) btnClass += ' answered';
+                
+                return (
+                  <button key={i} className={btnClass} onClick={() => setCurrentIdx(i)}>
+                    {i + 1}
+                  </button>
+                );
+              })}
             </div>
-            <hr className="divider" />
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ width: 16, height: 16, background: 'var(--accent)', borderRadius: 4 }} /> Câu hiện tại
+            
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border-light)', margin: '1.5rem 0' }} />
+            
+            <div className="te-legend">
+              <div className="te-legend-item">
+                <div className="te-box-current" /> Đang chọn
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ width: 16, height: 16, background: 'var(--accent-dim)', border: '1px solid var(--accent)', borderRadius: 4 }} /> Đã trả lời
+              <div className="te-legend-item">
+                <div className="te-box-answered" /> Đã trả lời
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ width: 16, height: 16, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 4 }} /> Chưa trả lời
+              <div className="te-legend-item">
+                <div className="te-box-empty" /> Chưa trả lời
               </div>
             </div>
+            
           </div>
         </div>
+
       </div>
     </div>
   );

@@ -85,11 +85,11 @@ export default function CreateExamPage() {
   return (
     <div className="ce-container">
       
-      {/* Header & Mode Switcher trải dài */}
+      {/* Header & Mode Switcher */}
       <div className="ce-header-section">
         <div>
           <h1 className="ce-title">
-            {mode === 'auto' ? '⚡ Tạo đề tự động (AI)' : '📝 Tạo đề thủ công'}
+            {mode === 'auto' ? 'Tạo đề tự động' : 'Tạo đề thủ công'}
           </h1>
         </div>
         
@@ -112,21 +112,19 @@ export default function CreateExamPage() {
       </div>
 
       <form onSubmit={handleGenerate}>
-        
-        {/* SỬ DỤNG BỐ CỤC 2 CỘT */}
         <div className="ce-layout-grid">
           
-          {/* ================= CỘT TRÁI (THÔNG TIN CHÍNH) ================= */}
+          {/* ================= CỘT TRÁI ================= */}
           <div className="ce-left-column">
             
             {/* Basic info Card */}
             <div className="ce-card">
               <h3 className="ce-card-title">
-                <span style={{ color: 'var(--cerulean)' }}>⚙️</span> Thông tin cơ bản
+                <span className="ce-icon-primary">⚙️</span> Thông tin cơ bản
               </h3>
               
               <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                <label className="form-label-navy">Tên đề thi <span style={{color: 'var(--jasper)'}}>*</span></label>
+                <label className="form-label-navy">Tên đề thi <span className="ce-required-star">*</span></label>
                 <input className="form-input-navy" placeholder="VD: Kiểm tra 15 phút Đại số Chương 1" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
               </div>
               
@@ -183,13 +181,13 @@ export default function CreateExamPage() {
                 </div>
               </>
             ) : (
-              /* Manual Mode: Question Bank Card (Dàn đều toàn bộ không gian trái) */
+              /* Manual Mode: Question Bank Card */
               <div className="ce-card">
                 <div className="ce-bank-header">
                   <h3 className="ce-bank-title">
-                    🏦 Ngân hàng câu hỏi <span style={{ color: 'var(--cerulean)', fontSize: '1rem' }}>(Đã chọn: {selectedQuestionIds.length})</span>
+                    🏦 Ngân hàng câu hỏi <span className="ce-bank-count">(Đã chọn: {selectedQuestionIds.length})</span>
                   </h3>
-                  <select className="form-input-navy" style={{ width: 'auto', padding: '8px 16px' }} value={qSearch.chapter || ''} onChange={e => setQSearch({...qSearch, chapter: e.target.value ? Number(e.target.value) : null})}>
+                  <select className="form-input-navy ce-filter-select" value={qSearch.chapter || ''} onChange={e => setQSearch({...qSearch, chapter: e.target.value ? Number(e.target.value) : null})}>
                     <option value="">Lọc: Tất cả chương</option>
                     {CHAPTERS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
@@ -205,23 +203,28 @@ export default function CreateExamPage() {
                     <table className="ce-table">
                       <thead>
                         <tr>
-                          <th style={{ width: '60px' }}>Chọn</th>
+                          <th className="ce-col-check">Chọn</th>
+                          <th className="ce-col-stt">STT</th> {/* Đã thêm cột STT */}
                           <th>Nội dung câu hỏi</th>
-                          <th style={{ width: '120px' }}>Độ khó</th>
+                          <th className="ce-col-diff">Độ khó</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {availableQuestions.map(q => (
+                        {availableQuestions.map((q, index) => (
                           <tr key={q.id} className={selectedQuestionIds.includes(q.id) ? 'selected' : ''} onClick={() => toggleQuestion(q.id)}>
-                            <td style={{ textAlign: 'center' }}>
-                              <input type="checkbox" checked={selectedQuestionIds.includes(q.id)} readOnly style={{ accentColor: 'var(--cerulean)', width: '16px', height: '16px', cursor: 'pointer' }} />
+                            <td className="ce-cell-center">
+                              <input type="checkbox" checked={selectedQuestionIds.includes(q.id)} readOnly className="ce-checkbox-custom" />
+                            </td>
+                            {/* Dữ liệu STT tự tăng */}
+                            <td className="ce-cell-center" style={{ fontWeight: 'bold', color: 'var(--text-gray)' }}>
+                              {index + 1}
                             </td>
                             <td>
                               <div className="ce-table-content">
                                 {q.content}
                               </div>
                             </td>
-                            <td>
+                            <td className="ce-cell-center">
                               <span className={`score-badge ${q.difficulty === 1 ? 'score-good' : q.difficulty === 2 ? 'score-avg' : 'score-bad'}`}>
                                 {q.difficulty === 1 ? 'Dễ' : q.difficulty === 2 ? 'Trung bình' : 'Khó'}
                               </span>
@@ -236,13 +239,13 @@ export default function CreateExamPage() {
             )}
           </div>
 
-          {/* ================= CỘT PHẢI (THANH ĐIỀU KHIỂN STICKY) ================= */}
+          {/* ================= CỘT PHẢI (STICKY) ================= */}
           <div className="ce-sticky-sidebar">
             
             {mode === 'auto' && (
               <div className="ce-card">
                 <div className="ce-diff-header">
-                  <h3 className="ce-card-title-sm" style={{ margin: 0 }}>🎯 Phân bổ độ khó</h3>
+                  <h3 className="ce-card-title-sm ce-title-nomargin">🎯 Phân bổ độ khó</h3>
                   <span className={`ce-diff-badge ${totalDiff === 100 ? 'valid' : 'invalid'}`}>
                     Tổng: {totalDiff}%
                   </span>
@@ -273,19 +276,19 @@ export default function CreateExamPage() {
             )}
 
             {/* Bảng tóm tắt & Nút Submit */}
-            <div className="ce-card" style={{ border: '2px solid var(--cerulean-fade)' }}>
-               <h3 className="ce-card-title-sm" style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '10px' }}>
+            <div className="ce-card ce-summary-card">
+               <h3 className="ce-card-title-sm ce-summary-header">
                  Tóm tắt thao tác
                </h3>
-               <div style={{ marginBottom: '1.5rem', color: 'var(--text-gray)', fontSize: '0.95rem' }}>
+               <div className="ce-summary-content">
                  {mode === 'auto' ? (
-                   <ul style={{ paddingLeft: '1.2rem', lineHeight: '1.8' }}>
+                   <ul className="ce-summary-list">
                      <li>Sử dụng AI Tự động</li>
                      <li>Tổng số: <strong>{form.total_questions}</strong> câu</li>
                      <li>Thời gian: <strong>{form.time_limit}</strong> phút</li>
                    </ul>
                  ) : (
-                   <ul style={{ paddingLeft: '1.2rem', lineHeight: '1.8' }}>
+                   <ul className="ce-summary-list">
                      <li>Chọn thủ công</li>
                      <li>Đã chọn: <strong style={{ color: selectedQuestionIds.length > 0 ? 'var(--cerulean)' : 'inherit'}}>{selectedQuestionIds.length}</strong> câu</li>
                      <li>Thời gian: <strong>{form.time_limit}</strong> phút</li>

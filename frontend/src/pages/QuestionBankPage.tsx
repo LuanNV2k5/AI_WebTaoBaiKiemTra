@@ -81,7 +81,7 @@ export default function QuestionBankPage() {
         {/* Header */}
         <div className="qb-header">
           <div>
-            <h1 className="qb-title">🗃️ Ngân hàng câu hỏi</h1>
+            <h1 className="qb-title">Ngân hàng câu hỏi</h1>
           </div>
           <div className="qb-actions">
             <button className="qb-btn-excel" onClick={() => document.getElementById('excel-upload')?.click()}>

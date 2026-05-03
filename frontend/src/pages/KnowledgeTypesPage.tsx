@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { knowledgeTypesApi } from '../services/api';
+import '../index.css'; // Đảm bảo import CSS
 
 interface KnowledgeType {
   id: number;
@@ -56,66 +57,95 @@ export default function KnowledgeTypesPage() {
     }
   };
 
-  if (loading) return <div className="loading-center"><div className="spinner"/><p className="text-secondary">Đang tải...</p></div>;
+  if (loading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
+      <div className="spinner"></div>
+      <p style={{ color: 'var(--text-gray)', marginTop: '1rem' }}>Đang tải dữ liệu...</p>
+    </div>
+  );
 
   return (
-    <div className="page fade-in">
-      <h1 style={{ marginBottom: '1.5rem' }}>🏷️ Quản lý loại kiến thức</h1>
+    <div className="kt-container">
+      <h1 className="kt-title">Quản lý loại kiến thức</h1>
 
-      <div className="grid-2">
-        {/* Form */}
-        <div className="card">
-          <h3>{editingId ? 'Sửa loại kiến thức' : 'Thêm loại kiến thức mới'}</h3>
-          <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }}>
-            <div className="form-group">
-              <label className="form-label">Tên loại kiến thức</label>
-              <input 
-                className="form-input" 
-                value={name} 
-                onChange={e => setName(e.target.value)} 
-                placeholder="VD: Công thức lượng giác..."
-                required
-              />
-            </div>
-            <div className="flex gap-2">
-              <button type="submit" className="btn btn-primary">
-                {editingId ? 'Lưu thay đổi' : 'Thêm mới'}
-              </button>
-              {editingId && (
-                <button type="button" className="btn btn-secondary" onClick={() => { setEditingId(null); setName(''); }}>
-                  Hủy
+      <div className="kt-layout-grid">
+        
+        {/* ================= CỘT TRÁI: FORM ================= */}
+        <div className="kt-left-col">
+          <div className="kt-card">
+            <h3 className="kt-card-title">
+              {editingId ? '✏️ Sửa loại kiến thức' : '✨ Thêm loại kiến thức mới'}
+            </h3>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label-navy">Tên loại kiến thức <span style={{color: 'var(--jasper)'}}>*</span></label>
+                <input 
+                  className="form-input-navy" 
+                  value={name} 
+                  onChange={e => setName(e.target.value)} 
+                  placeholder="VD: Định lý Vi-ét..."
+                  required
+                />
+              </div>
+              
+              <div className="kt-form-actions">
+                {editingId && (
+                  <button type="button" className="btn-cancel-gray" onClick={() => { setEditingId(null); setName(''); }}>
+                    Hủy bỏ
+                  </button>
+                )}
+                <button type="submit" className="btn-submit-navy" style={{ margin: 0, flex: 2 }}>
+                  {editingId ? '💾 Lưu thay đổi' : '🚀 Thêm mới'}
                 </button>
-              )}
-            </div>
-          </form>
-        </div>
-
-        {/* List */}
-        <div className="card">
-          <h3>Danh sách hiện có</h3>
-          <div style={{ marginTop: '1rem' }}>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Tên</th>
-                  <th style={{ textAlign: 'right' }}>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {types.map(t => (
-                  <tr key={t.id}>
-                    <td><span style={{ fontWeight: 600 }}>{t.name}</span></td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button className="btn btn-sm btn-warning" onClick={() => handleEdit(t)}>[Sửa]</button>
-                      {' '}
-                      <button className="btn btn-sm btn-danger" onClick={() => handleDelete(t.id)}>[Xóa]</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              </div>
+            </form>
           </div>
         </div>
+
+        {/* ================= CỘT PHẢI: DANH SÁCH ================= */}
+        <div className="kt-right-col">
+          <div className="kt-card">
+            <h3 className="kt-card-title">📚 Danh sách hiện có ({types.length})</h3>
+            
+            <div className="kt-table-wrap">
+              {types.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-gray)' }}>
+                  <span style={{ fontSize: '2rem', display: 'block', marginBottom: '1rem' }}>📭</span>
+                  Chưa có loại kiến thức nào.
+                </div>
+              ) : (
+                <table className="kt-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '60px', textAlign: 'center' }}>ID</th>
+                      <th>Tên loại kiến thức</th>
+                      <th className="text-right">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {types.map(t => (
+                      <tr key={t.id}>
+                        <td style={{ textAlign: 'center', fontWeight: 'bold', color: 'var(--text-gray)' }}>
+                          #{t.id}
+                        </td>
+                        <td>
+                          <span className="kt-name-text">{t.name}</span>
+                        </td>
+                        <td>
+                          <div className="flex-right">
+                            <button className="action-btn btn-edit" onClick={() => handleEdit(t)} title="Sửa">✏️</button>
+                            <button className="action-btn btn-delete" onClick={() => handleDelete(t.id)} title="Xóa">🗑️</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
