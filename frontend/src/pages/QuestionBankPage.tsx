@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { questionsApi, knowledgeTypesApi } from '../services/api';
 import { Question } from '../types';
-import '../index.css'; // Khai báo file CSS
+import '../index.css'; 
 
 const KT_NAMES: Record<string, string> = { concept: 'Khái niệm', theorem: 'Định lý', property: 'Tính chất', exercise: 'Dạng bài tập' };
 const DIFF_LABELS: Record<number, string> = { 1: 'Dễ', 2: 'Trung bình', 3: 'Khó' };
@@ -17,13 +17,22 @@ export default function QuestionBankPage() {
   const [filter, setFilter] = useState({ grade: '', chapter: '', knowledge_type: '', difficulty: '' });
   const [ktOptions, setKtOptions] = useState<{ id: number; name: string }[]>([]);
 
+  // === THÊM STATE PHÂN TRANG ===
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // Số câu hỏi mỗi trang
+
   const load = () => {
+    setLoading(true);
     const params: Record<string, any> = {};
     if (filter.grade) params.grade = Number(filter.grade);
     if (filter.chapter) params.chapter = Number(filter.chapter);
     if (filter.knowledge_type) params.knowledge_type = filter.knowledge_type;
     if (filter.difficulty) params.difficulty = Number(filter.difficulty);
-    questionsApi.list(params).then(r => setQuestions(r.data)).finally(() => setLoading(false));
+    
+    questionsApi.list(params).then(r => {
+      setQuestions(r.data);
+      setCurrentPage(1); // Khi lọc hoặc tải lại, tự động quay về trang 1
+    }).finally(() => setLoading(false));
   };
 
   useEffect(() => { load(); }, [filter]);
@@ -59,6 +68,12 @@ export default function QuestionBankPage() {
     setEditId(q.id); setShowForm(true);
   };
 
+  // === TÍNH TOÁN DỮ LIỆU CỦA TRANG HIỆN TẠI ===
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentQuestions = questions.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(questions.length / itemsPerPage);
+
   return (
     <>
       <div className="qb-container">
@@ -67,7 +82,6 @@ export default function QuestionBankPage() {
         <div className="qb-header">
           <div>
             <h1 className="qb-title">🗃️ Ngân hàng câu hỏi</h1>
-            <p className="qb-subtitle">Quản lý tổng cộng <strong>{questions.length}</strong> câu hỏi trong hệ thống</p>
           </div>
           <div className="qb-actions">
             <button className="qb-btn-excel" onClick={() => document.getElementById('excel-upload')?.click()}>
@@ -145,6 +159,7 @@ export default function QuestionBankPage() {
               <table className="qb-table">
                 <thead>
                   <tr>
+                    <th style={{ width: '60px', textAlign: 'center' }}>STT</th>
                     <th>Nội dung câu hỏi</th>
                     <th>Khối</th>
                     <th>Chương</th>
@@ -155,8 +170,11 @@ export default function QuestionBankPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {questions.map(q => (
+                  {currentQuestions.map((q, index) => (
                     <tr key={q.id}>
+                      <td style={{ textAlign: 'center', fontWeight: 'bold', color: 'var(--text-gray)' }}>
+                        {indexOfFirstItem + index + 1}
+                      </td>
                       <td><div className="qb-question-text">{q.content}</div></td>
                       <td><span className="qb-badge qb-badge-grade">Khối {q.grade || 10}</span></td>
                       <td><span className="qb-badge qb-badge-chapter">Ch. {q.chapter}</span></td>
@@ -177,7 +195,7 @@ export default function QuestionBankPage() {
                   ))}
                   {questions.length === 0 && (
                     <tr>
-                      <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-gray)' }}>
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-gray)' }}>
                         <span style={{ fontSize: '2rem', display: 'block', marginBottom: '1rem' }}>📭</span>
                         Không tìm thấy câu hỏi nào phù hợp.
                       </td>
@@ -185,6 +203,47 @@ export default function QuestionBankPage() {
                   )}
                 </tbody>
               </table>
+
+              {/* === THANH PHÂN TRANG (Cập nhật thêm nút Trang đầu / Trang cuối) === */}
+              {totalPages > 1 && (
+                <div className="qb-pagination">
+                  <button 
+                    className="qb-page-btn" 
+                    title="Về trang đầu"
+                    disabled={currentPage === 1} 
+                    onClick={() => setCurrentPage(1)}
+                  >
+                    &laquo;&laquo;
+                  </button>
+                  <button 
+                    className="qb-page-btn" 
+                    disabled={currentPage === 1} 
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                  >
+                    &laquo; Trước
+                  </button>
+                  
+                  <span className="qb-page-info">
+                    Trang {currentPage} / {totalPages}
+                  </span>
+                  
+                  <button 
+                    className="qb-page-btn" 
+                    disabled={currentPage === totalPages} 
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                  >
+                    Sau &raquo;
+                  </button>
+                  <button 
+                    className="qb-page-btn" 
+                    title="Đến trang cuối"
+                    disabled={currentPage === totalPages} 
+                    onClick={() => setCurrentPage(totalPages)}
+                  >
+                    &raquo;&raquo;
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

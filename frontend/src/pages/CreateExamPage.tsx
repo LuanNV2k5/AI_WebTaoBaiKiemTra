@@ -91,9 +91,6 @@ export default function CreateExamPage() {
           <h1 className="ce-title">
             {mode === 'auto' ? '⚡ Tạo đề tự động (AI)' : '📝 Tạo đề thủ công'}
           </h1>
-          <p className="ce-subtitle">
-            {mode === 'auto' ? 'Sử dụng thuật toán di truyền để tối ưu hóa bộ câu hỏi từ ngân hàng.' : 'Tự tay chọn lọc từng câu hỏi theo ý muốn.'}
-          </p>
         </div>
         
         <div className="ce-mode-switcher">

@@ -1072,3 +1072,42 @@ body {
   background-color: var(--surface);
   box-shadow: 0 0 0 3px var(--cerulean-fade);
 }
+/* --- Phân trang (Pagination) --- */
+.qb-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-light);
+  background: var(--surface);
+  border-radius: 0 0 16px 16px;
+}
+.qb-page-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: var(--surface);
+  color: var(--text-dark);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.qb-page-btn:hover:not(:disabled) {
+  background: var(--cerulean-fade);
+  color: var(--cerulean);
+  border-color: var(--cerulean);
+}
+.qb-page-btn:disabled {
+  color: #94a3b8;
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+.qb-page-info {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-gray);
+  background: var(--bg-app);
+  padding: 6px 16px;
+  border-radius: 20px;
+}
