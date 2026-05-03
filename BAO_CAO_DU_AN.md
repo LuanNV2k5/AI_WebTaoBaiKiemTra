@@ -62,6 +62,11 @@ pip install -r requirements.txt
 ```bash
 uvicorn app.main:app --reload
 ```
+Lưu ý:
+Trường hợp không chạy được có thế thử dùng Python ép chạy
+```bash
+python -m uvicorn app.main:app --reload
+```
 
 ### Bước 2: Frontend
 ```bash
