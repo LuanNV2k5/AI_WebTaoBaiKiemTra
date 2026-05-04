@@ -1,10 +1,13 @@
 """
-AI Evaluator – Tích hợp Google Gemini API để sinh nhận xét bằng tiếng Việt.
-Fallback về rule-based nếu API key là 'mock' hoặc có lỗi.
+AI Evaluator – Tích hợp Groq API để sinh nhận xét giáo dục.
+Sửa lỗi ImportError và tối ưu cấu trúc hàm.
 """
+from groq import AsyncGroq
 from typing import List, Dict, Optional
 from app.core.config import settings
 
+# Khởi tạo client Groq
+client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 
 def _build_single_exam_prompt(
     score: float,
@@ -15,11 +18,12 @@ def _build_single_exam_prompt(
     error_details: Dict,
     subject: str = "Toán"
 ) -> str:
+    """Tạo prompt cho một bài thi duy nhất."""
     error_text = ""
     for kt, topics in error_details.items():
-        error_text += f"\n* Các câu bạn làm sai liên quan đến {kt}:\n"
+        error_text += f"\n* Các câu làm sai liên quan đến {kt}:\n"
         for topic, stats in topics.items():
-            error_text += f"  - {topic} ({stats['wrong']}/{stats['total']})\n"
+            error_text += f"   - {topic} ({stats['wrong']}/{stats['total']})\n"
 
     return f"""Bạn là giáo viên môn {subject}. Hãy viết đánh giá kết quả bài thi theo ĐÚNG CẤU TRÚC sau đây:
 
@@ -31,68 +35,50 @@ BẠN LÀM ĐÚNG {correct_count}/{total_count}
 NHẬN XÉT CHI TIẾT:
 (Viết thêm 3-4 câu nhận xét về điểm mạnh, điểm yếu và lời khuyên học tập dựa trên số liệu trên. Giọng điệu thân thiện, khích lệ.)"""
 
-
 def _build_multi_exam_prompt(
     exams_history: List[Dict],
     subject: str = "Toán"
 ) -> str:
+    """Tạo prompt phân tích xu hướng qua nhiều bài thi."""
     history_text = "\n".join([
-        f"- Bài {i+1} ({e['date']}): {e['score']:.1f}đ | Khái niệm: {e.get('concept_acc', 0):.0f}% | Định lý: {e.get('theorem_acc', 0):.0f}% | Bài tập: {e.get('exercise_acc', 0):.0f}%"
+        f"- Bài {i+1} ({e.get('date', 'N/A')}): {e.get('score', 0):.1f}đ | Tỉ lệ đúng: {e.get('correct_count', 0)}/{e.get('total_count', 0)}"
         for i, e in enumerate(exams_history)
     ])
-    scores = [e['score'] for e in exams_history]
-    trend = "tăng" if scores[-1] > scores[0] else ("giảm" if scores[-1] < scores[0] else "ổn định")
+    
+    scores = [e.get('score', 0) for e in exams_history]
+    first_score = scores[0] if scores else 0
+    last_score = scores[-1] if scores else 0
+    trend = "tăng tiến" if last_score > first_score else ("sụt giảm" if last_score < first_score else "ổn định")
 
-    return f"""Bạn là giáo viên phân tích tiến bộ học tập môn {subject}. Dựa trên {len(exams_history)} bài kiểm tra gần nhất, hãy viết đánh giá tổng hợp (150-200 từ) bằng tiếng Việt:
+    return f"""Bạn là chuyên gia phân tích giáo dục môn {subject}. 
+Dựa trên lịch sử {len(exams_history)} bài thi gần nhất, hãy viết báo cáo tiến bộ (khoảng 150-200 từ):
 
-Lịch sử điểm số:
+LỊCH SỬ ĐIỂM SỐ:
 {history_text}
 
-Xu hướng điểm: {trend} (từ {scores[0]:.1f} → {scores[-1]:.1f})
+XU HƯỚNG: {trend} (từ {first_score:.1f}đ -> {last_score:.1f}đ)
 
-Yêu cầu phân tích:
-1. Nhận xét xu hướng tiến bộ tổng thể
-2. Xác định kiến thức nào học sinh đang cải thiện tốt
-3. Xác định kiến thức nào vẫn còn yếu và chưa cải thiện
-4. Đề xuất chiến lược ôn tập cụ thể cho giai đoạn tới
-Viết với giọng điệu động viên, khoa học."""
+YÊU CẦU:
+1. Nhận xét về sự thay đổi phong độ của học sinh.
+2. Chỉ ra điểm tích cực (ví dụ: sự kiên trì hoặc sự ổn định).
+3. Đề xuất chiến lược học tập cụ thể để duy trì hoặc cải thiện kết quả.
+Viết giọng điệu chuyên nghiệp, khích lệ và gần gũi."""
 
-
-def _rule_based_feedback(
-    correct_count: int, 
-    total_count: int, 
-    error_details: Dict
-) -> str:
+def _rule_based_feedback(correct_count: int, total_count: int, error_details: Dict) -> str:
+    """Xử lý dự phòng (fallback) khi API lỗi hoặc chưa có Key."""
     error_text = ""
     for kt, topics in error_details.items():
-        error_text += f"\n* Các câu bạn làm sai liên quan đến {kt}:\n"
+        error_text += f"\n* Bạn cần xem lại {kt}:\n"
         for topic, stats in topics.items():
-            error_text += f"  - {topic} ({stats['wrong']}/{stats['total']})\n"
-
-    if not error_text:
-        error_text = "\nChúc mừng! Bạn không làm sai câu nào thuộc các loại kiến thức chính."
-
+            error_text += f"   - {topic} ({stats['wrong']}/{stats['total']})\n"
+    
     return (
         f"BẠN LÀM ĐÚNG {correct_count}/{total_count}\n"
         f"ĐÁNH GIÁ KIẾN THỨC HỌC SINH\n"
         f"{error_text}\n"
         f"---\n"
-        f"NHẬN XÉT: Bạn đã hoàn thành bài thi. Hãy xem lại các phần sai ở trên để củng cố kiến thức nhé!"
+        f"NHẬN XÉT: Hệ thống AI đang bảo trì. Bạn hãy dựa vào danh sách câu sai ở trên để ôn tập lại nhé!"
     )
-
-
-def _rule_based_multi_feedback(exams_history: List[Dict]) -> str:
-    scores = [e['score'] for e in exams_history]
-    avg = sum(scores) / len(scores)
-    trend = "có xu hướng tăng" if scores[-1] > scores[0] else ("có xu hướng giảm" if scores[-1] < scores[0] else "ổn định")
-    best = max(scores)
-    worst = min(scores)
-    return (
-        f"📈 Phân tích {len(scores)} bài kiểm tra: Điểm trung bình {avg:.1f}/100, "
-        f"điểm cao nhất {best:.1f}, thấp nhất {worst:.1f}. "
-        f"Kết quả học tập {trend} (từ {scores[0]:.1f} → {scores[-1]:.1f}). "
-    )
-
 
 async def generate_single_exam_feedback(
     score: float,
@@ -103,33 +89,46 @@ async def generate_single_exam_feedback(
     error_details: Dict,
     subject: str = "Toán"
 ) -> str:
-    if settings.GEMINI_API_KEY == "mock":
+    """Hàm chính gọi AI nhận xét một bài thi đơn lẻ."""
+    if not settings.GROQ_API_KEY or settings.GROQ_API_KEY == "mock":
         return _rule_based_feedback(correct_count, total_count, error_details)
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel("gemini-1.5-flash")
         prompt = _build_single_exam_prompt(score, correct_count, total_count, knowledge_stats, chapter_stats, error_details, subject)
-        response = model.generate_content(prompt)
-        return response.text
+        
+        completion = await client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile",
+            temperature=0.7,
+            max_tokens=600
+        )
+        return completion.choices[0].message.content
     except Exception as e:
+        print(f"Lỗi Groq (Single): {e}")
         return _rule_based_feedback(correct_count, total_count, error_details)
-
 
 async def generate_multi_exam_feedback(
     exams_history: List[Dict],
     subject: str = "Toán"
 ) -> str:
-    if settings.GEMINI_API_KEY == "mock":
-        return _rule_based_multi_feedback(exams_history)
+    """Hàm chính gọi AI phân tích xu hướng tiến bộ."""
+    if not exams_history:
+        return "Chưa có đủ dữ liệu lịch sử để thực hiện phân tích tiến độ."
+        
+    if not settings.GROQ_API_KEY or settings.GROQ_API_KEY == "mock":
+        return "Hệ thống AI đang bảo trì, vui lòng xem lịch sử điểm số bên dưới."
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        # Sử dụng hàm build prompt đã định nghĩa phía trên
         prompt = _build_multi_exam_prompt(exams_history, subject)
-        response = model.generate_content(prompt)
-        return response.text
+        
+        completion = await client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile",
+            temperature=0.7,
+            max_tokens=1000
+        )
+        return completion.choices[0].message.content
     except Exception as e:
-        return _rule_based_multi_feedback(exams_history)
+        print(f"Lỗi Groq (Multi): {e}")
+        return "Không thể tải nhận xét tiến độ lúc này."

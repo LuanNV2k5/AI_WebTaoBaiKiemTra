@@ -6,11 +6,13 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     DATABASE_URL: str = "sqlite:///./quiz_system.db"
-    GEMINI_API_KEY: str = "mock"
+    # Thêm dòng này cho Groq
+    GROQ_API_KEY: str = "mock" 
     APP_NAME: str = "Trắc nghiệm Toán học"
     DEBUG: bool = True
 
     class Config:
         env_file = ".env"
+        extra = "ignore" 
 
 settings = Settings()
