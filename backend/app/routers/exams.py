@@ -106,30 +106,6 @@ def generate_exam(
     db.refresh(exam)
     return _exam_to_out(exam)
 
-import re
-
-def clean_math_formula(text: str) -> str:
-    if not text: return text
-    
-    # 1. Đảm bảo có dấu \ trước sqrt
-    text = re.sub(r'(?<!\\)sqrt', r'\\sqrt', text)
-    
-    # 2. Xử lý sqrt144 -> \sqrt{144} (số đứng sau sqrt không ngoặc)
-    text = re.sub(r'\\sqrt([0-9]+)', r'\\sqrt{\1}', text)
-    
-    # 3. Xử lý \sqrt(...) -> \sqrt{...}
-    text = re.sub(r'\\sqrt\((.*?)\)', r'\\sqrt{\1}', text)
-    
-    # 4. Xử lý ký hiệu √
-    text = re.sub(r'√\((.*?)\)', r'\\sqrt{\1}', text)
-    text = re.sub(r'√([0-9a-zA-Z]+)', r'\\sqrt{\1}', text)
-    
-    # 5. Đảm bảo bọc trong $...$ nếu có các lệnh LaTeX
-    # Chúng ta tìm các đoạn có \sqrt hoặc các phép toán mũ ^ mà chưa có $
-    if ('\\sqrt' in text or '^' in text or '\\frac' in text) and '$' not in text:
-        text = f"${text}$"
-        
-    return text
 
 @router.post("/generate-ai", response_model=ExamOut, status_code=status.HTTP_201_CREATED)
 async def generate_exam_ai(
@@ -171,13 +147,13 @@ async def generate_exam_ai(
             ans = raw_ans[0] if raw_ans else "A"
 
             q = Question(
-                content=clean_math_formula(q_data.get("content", "Câu hỏi không có nội dung")),
-                option_a=clean_math_formula(q_data.get("option_a", "A")),
-                option_b=clean_math_formula(q_data.get("option_b", "B")),
-                option_c=clean_math_formula(q_data.get("option_c", "C")),
-                option_d=clean_math_formula(q_data.get("option_d", "D")),
+                content=q_data.get("content", "Câu hỏi không có nội dung"),
+                option_a=q_data.get("option_a", "A"),
+                option_b=q_data.get("option_b", "B"),
+                option_c=q_data.get("option_c", "C"),
+                option_d=q_data.get("option_d", "D"),
                 correct_answer=ans,
-                explanation=clean_math_formula(q_data.get("explanation", "")),
+                explanation=q_data.get("explanation", ""),
                 difficulty=diff,
                 subject=req.subject,
                 grade=req.grade,
