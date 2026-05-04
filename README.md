@@ -30,16 +30,18 @@
 
 Dự án được phát triển theo mô hình Client - Server, sử dụng các ngôn ngữ và framework hiện đại nhất:
 
-### Backend (Xử lý Logic & API)
-*   **Ngôn ngữ:** Python
-*   **Framework:** FastAPI (Cung cấp RESTful API tốc độ cao)
-*   **Cơ sở dữ liệu:** SQLite kết hợp SQLAlchemy (ORM)
-*   **Trí tuệ nhân tạo:** Google Gemini AI API
+### 2.1. Backend (Python)
+- **FastAPI**: Framework xử lý API tốc độ cao.
+- **SQLAlchemy**: Quản lý cơ sở dữ liệu.
+- **SQLite**: Lưu trữ dữ liệu ổn định, gọn nhẹ.
+- **Groq Cloud API (Llama 3.3 70B)**: Hệ thống Multi-Agent (Generator & Evaluator) để sinh câu hỏi và kiểm duyệt tính chính xác.
+- **Openpyxl**: Xử lý nhập liệu hàng loạt từ file Excel.
 
-### Frontend (Giao diện Người dùng)
-*   **Ngôn ngữ:** TypeScript & JavaScript
-*   **Thư viện/Công cụ:** React 18, Vite
-*   **Styling:** CSS Vanilla (Hỗ trợ UI/UX linh hoạt, hiện đại)
+### 2.2. Frontend (TypeScript & React)
+- **React 18**: Thư viện giao diện người dùng.
+- **Vite**: Công cụ build frontend hiện đại.
+- **KaTeX**: Thư viện render công thức Toán học chuẩn LaTeX.
+- **CSS Vanilla**: Giao diện tùy chỉnh, tối ưu trải nghiệm người dùng.
 
 ---
 
