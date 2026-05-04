@@ -7,7 +7,7 @@ const CHAPTERS = Array.from({ length: 8 }, (_, i) => ({ value: i + 1, label: `Ch
 
 export default function CreateExamPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'auto' | 'manual'>('auto');
+  const [mode, setMode] = useState<'auto' | 'manual' | 'ai'>('auto');
   const [loading, setLoading] = useState(false);
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<number[]>([]);
   const [availableQuestions, setAvailableQuestions] = useState<any[]>([]);
@@ -23,6 +23,7 @@ export default function CreateExamPage() {
     total_questions: 20,
     difficulty_distribution: { easy: 40, medium: 40, hard: 20 },
     time_limit: 30,
+    topic: '',
   });
 
   const loadQuestions = async () => {
@@ -36,9 +37,21 @@ export default function CreateExamPage() {
     if (mode === 'manual') loadQuestions();
   }, [mode, qSearch]);
 
+  useEffect(() => { knowledgeTypesApi.list().then(r => setKtOptions(r.data)); }, []);
+
   useEffect(() => {
-    knowledgeTypesApi.list().then(r => setKtOptions(r.data));
-  }, []);
+    // @ts-ignore
+    if (window.renderMathInElement) {
+      // @ts-ignore
+      window.renderMathInElement(document.body, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '$', right: '$', display: false },
+        ],
+        throwOnError: false
+      });
+    }
+  }, [availableQuestions]);
 
   const toggleChapter = (ch: number) => setForm(f => ({
     ...f, chapters: f.chapters.includes(ch) ? f.chapters.filter(c => c !== ch) : [...f.chapters, ch]
@@ -56,24 +69,50 @@ export default function CreateExamPage() {
     if (!form.title.trim()) return alert('Vui lòng nhập tên đề thi');
     setLoading(true);
     try {
+      let res;
       if (mode === 'auto') {
         const payload = { ...form, chapters: form.chapters.length ? form.chapters : undefined, knowledge_types: form.knowledge_types.length ? form.knowledge_types : undefined };
-        const res = await examsApi.generate(payload);
-        alert(`✅ Tạo đề thành công: ${res.data.total_questions} câu hỏi!`);
+        res = await examsApi.generate(payload);
+      } else if (mode === 'ai') {
+        if (!form.topic.trim()) { setLoading(false); return alert('Vui lòng nhập chủ đề AI cần soạn'); }
+        const payload = {
+          title: form.title,
+          topic: form.topic,
+          subject: form.subject,
+          grade: form.grade,
+          total_questions: form.total_questions,
+          difficulty_distribution: form.difficulty_distribution,
+          time_limit: form.time_limit,
+          chapter: form.chapters[0] || 1,
+          knowledge_type: form.knowledge_types[0] || 'concept'
+        };
+        res = await examsApi.generateAI(payload);
       } else {
-        if (selectedQuestionIds.length === 0) return alert("Vui lòng chọn ít nhất 1 câu hỏi");
-        await examsApi.createManual({
+        if (selectedQuestionIds.length === 0) { setLoading(false); return alert("Vui lòng chọn ít nhất 1 câu hỏi"); }
+        res = await examsApi.createManual({
           title: form.title,
           grade: form.grade,
           time_limit: form.time_limit,
           question_ids: selectedQuestionIds
         });
-        alert(`✅ Đã tạo đề thi thủ công thành công!`);
       }
+      
+      setLoading(false);
+      alert(mode === 'manual' ? '✅ Đã tạo đề thi thủ công thành công!' : `✅ Tạo đề thành công: ${res.data.total_questions} câu hỏi!`);
       navigate('/exams');
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Tạo đề thất bại');
-    } finally { setLoading(false); }
+      setLoading(false);
+      console.error("Lỗi tạo đề:", err);
+      let msg = 'Tạo đề thất bại';
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        msg = 'Hệ thống AI phản hồi quá lâu (Timeout). Bạn hãy thử lại với số lượng câu hỏi ít hơn (ví dụ: 10 câu) hoặc kiểm tra lại kết nối mạng.';
+      } else if (err.response?.data?.detail) {
+        msg = err.response.data.detail;
+      } else if (err.message) {
+        msg = `Lỗi: ${err.message}`;
+      }
+      alert(msg);
+    }
   };
 
   const toggleQuestion = (id: number) => {
@@ -89,7 +128,7 @@ export default function CreateExamPage() {
       <div className="ce-header-section">
         <div>
           <h1 className="ce-title">
-            {mode === 'auto' ? 'Tạo đề tự động' : 'Tạo đề thủ công'}
+            {mode === 'auto' ? 'Tạo đề tự động' : mode === 'ai' ? 'Tạo đề bằng AI' : 'Tạo đề thủ công'}
           </h1>
         </div>
         
@@ -100,6 +139,14 @@ export default function CreateExamPage() {
             className={`ce-mode-btn ${mode === 'auto' ? 'active' : ''}`}
           >
             Chế độ Tự động
+          </button>
+          <button 
+            type="button" 
+            onClick={() => setMode('ai')} 
+            className={`ce-mode-btn ${mode === 'ai' ? 'active' : ''}`}
+            style={{ borderLeft: '1px solid var(--border-color)', borderRight: '1px solid var(--border-color)' }}
+          >
+            AI Soạn Đề
           </button>
           <button 
             type="button" 
@@ -141,7 +188,7 @@ export default function CreateExamPage() {
                     <option value={12}>Khối 12</option>
                   </select>
                 </div>
-                {mode === 'auto' && (
+                {(mode === 'auto' || mode === 'ai') && (
                   <div>
                     <label className="form-label-navy">Số lượng câu hỏi</label>
                     <input className="form-input-navy" type="number" min={5} max={60} value={form.total_questions} onChange={e => setForm(f => ({ ...f, total_questions: Number(e.target.value) }))} />
@@ -180,6 +227,25 @@ export default function CreateExamPage() {
                   </div>
                 </div>
               </>
+            ) : mode === 'ai' ? (
+              <div className="ce-card">
+                <h3 className="ce-card-title">
+                  <span className="ce-icon-primary">🚀</span> Chủ đề AI cần soạn
+                </h3>
+                <div className="form-group">
+                  <label className="form-label-navy">Mô tả chủ đề hoặc nội dung kiến thức</label>
+                  <textarea 
+                    className="form-input-navy" 
+                    rows={4}
+                    placeholder="VD: Các bài toán về căn bậc hai lớp 10, tập trung vào hằng đẳng thức căn A bình bằng trị tuyệt đối của A..." 
+                    value={form.topic} 
+                    onChange={e => setForm(f => ({ ...f, topic: e.target.value }))}
+                  />
+                  <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-gray)' }}>
+                    * AI sẽ tự động tạo câu hỏi, đáp án và lời giải chi tiết dựa trên yêu cầu của bạn.
+                  </p>
+                </div>
+              </div>
             ) : (
               /* Manual Mode: Question Bank Card */
               <div className="ce-card">
@@ -189,7 +255,14 @@ export default function CreateExamPage() {
                   </h3>
                   <select className="form-input-navy ce-filter-select" value={qSearch.chapter || ''} onChange={e => setQSearch({...qSearch, chapter: e.target.value ? Number(e.target.value) : null})}>
                     <option value="">Lọc: Tất cả chương</option>
-                    {CHAPTERS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                    <option value={1}>Chương 1</option>
+                    <option value={2}>Chương 2</option>
+                    <option value={3}>Chương 3</option>
+                    <option value={4}>Chương 4</option>
+                    <option value={5}>Chương 5</option>
+                    <option value={6}>Chương 6</option>
+                    <option value={7}>Chương 7</option>
+                    <option value={8}>Chương 8</option>
                   </select>
                 </div>
                 
@@ -204,7 +277,7 @@ export default function CreateExamPage() {
                       <thead>
                         <tr>
                           <th className="ce-col-check">Chọn</th>
-                          <th className="ce-col-stt">STT</th> {/* Đã thêm cột STT */}
+                          <th className="ce-col-stt">STT</th>
                           <th>Nội dung câu hỏi</th>
                           <th className="ce-col-diff">Độ khó</th>
                         </tr>
@@ -215,7 +288,6 @@ export default function CreateExamPage() {
                             <td className="ce-cell-center">
                               <input type="checkbox" checked={selectedQuestionIds.includes(q.id)} readOnly className="ce-checkbox-custom" />
                             </td>
-                            {/* Dữ liệu STT tự tăng */}
                             <td className="ce-cell-center" style={{ fontWeight: 'bold', color: 'var(--text-gray)' }}>
                               {index + 1}
                             </td>
@@ -242,7 +314,7 @@ export default function CreateExamPage() {
           {/* ================= CỘT PHẢI (STICKY) ================= */}
           <div className="ce-sticky-sidebar">
             
-            {mode === 'auto' && (
+            {(mode === 'auto' || mode === 'ai') && (
               <div className="ce-card">
                 <div className="ce-diff-header">
                   <h3 className="ce-card-title-sm ce-title-nomargin">🎯 Phân bổ độ khó</h3>
@@ -287,6 +359,12 @@ export default function CreateExamPage() {
                      <li>Tổng số: <strong>{form.total_questions}</strong> câu</li>
                      <li>Thời gian: <strong>{form.time_limit}</strong> phút</li>
                    </ul>
+                 ) : mode === 'ai' ? (
+                  <ul className="ce-summary-list">
+                    <li>AI Soạn Đề Mới</li>
+                    <li>Tổng số: <strong>{form.total_questions}</strong> câu</li>
+                    <li>Thời gian: <strong>{form.time_limit}</strong> phút</li>
+                  </ul>
                  ) : (
                    <ul className="ce-summary-list">
                      <li>Chọn thủ công</li>
@@ -301,7 +379,7 @@ export default function CreateExamPage() {
                 disabled={loading || (mode === 'auto' && totalDiff !== 100) || (mode === 'manual' && selectedQuestionIds.length === 0)}
                 className="ce-submit-btn"
               >
-                {loading ? 'Đang xử lý...' : mode === 'auto' ? '🚀 XÁC NHẬN TẠO ĐỀ' : '💾 LƯU ĐỀ THỦ CÔNG'}
+                {loading ? 'Đang xử lý...' : mode === 'auto' ? 'XÁC NHẬN TẠO ĐỀ' : mode === 'ai' ? 'AI BẮT ĐẦU SOẠN ĐỀ' : 'LƯU ĐỀ THỦ CÔNG'}
               </button>
             </div>
 

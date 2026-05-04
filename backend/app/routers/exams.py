@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.db.database import get_db
-from app.db.models import Exam, ExamQuestion, Question, User
-from app.schemas.schemas import ExamGenerateRequest, ExamOut, ExamListOut
+from app.db.models import Exam, ExamQuestion, Question, User, KnowledgeTypeModel
 from app.core.deps import get_current_user, require_admin
 from app.services.exam_generator import generate_exam_genetic
+from app.services.ai_evaluator import generate_ai_questions
+from app.schemas.schemas import ExamGenerateRequest, ExamGenerateAIRequest, ExamOut, ExamListOut
 
 router = APIRouter(prefix="/api/exams", tags=["exams"])
 
@@ -104,6 +105,119 @@ def generate_exam(
     db.commit()
     db.refresh(exam)
     return _exam_to_out(exam)
+
+import re
+
+def clean_math_formula(text: str) -> str:
+    if not text: return text
+    
+    # 1. Đảm bảo có dấu \ trước sqrt
+    text = re.sub(r'(?<!\\)sqrt', r'\\sqrt', text)
+    
+    # 2. Xử lý sqrt144 -> \sqrt{144} (số đứng sau sqrt không ngoặc)
+    text = re.sub(r'\\sqrt([0-9]+)', r'\\sqrt{\1}', text)
+    
+    # 3. Xử lý \sqrt(...) -> \sqrt{...}
+    text = re.sub(r'\\sqrt\((.*?)\)', r'\\sqrt{\1}', text)
+    
+    # 4. Xử lý ký hiệu √
+    text = re.sub(r'√\((.*?)\)', r'\\sqrt{\1}', text)
+    text = re.sub(r'√([0-9a-zA-Z]+)', r'\\sqrt{\1}', text)
+    
+    # 5. Đảm bảo bọc trong $...$ nếu có các lệnh LaTeX
+    # Chúng ta tìm các đoạn có \sqrt hoặc các phép toán mũ ^ mà chưa có $
+    if ('\\sqrt' in text or '^' in text or '\\frac' in text) and '$' not in text:
+        text = f"${text}$"
+        
+    return text
+
+@router.post("/generate-ai", response_model=ExamOut, status_code=status.HTTP_201_CREATED)
+async def generate_exam_ai(
+    req: ExamGenerateAIRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        ai_questions = await generate_ai_questions(
+            topic=req.topic,
+            grade=req.grade,
+            num_questions=req.total_questions,
+            difficulty_distribution=req.difficulty_distribution or {"easy": 40, "medium": 40, "hard": 20},
+            subject=req.subject
+        )
+
+        if not ai_questions:
+            raise HTTPException(status_code=500, detail="AI không thể sinh câu hỏi vào lúc này (có thể do lỗi kết nối hoặc giới hạn API)")
+
+        # Kiểm tra/Tạo Knowledge Type nếu chưa có (để tránh lỗi FK)
+        existing_kt = db.query(KnowledgeTypeModel).filter(KnowledgeTypeModel.name == req.knowledge_type).first()
+        if not existing_kt:
+            new_kt = KnowledgeTypeModel(name=req.knowledge_type)
+            db.add(new_kt)
+            db.flush()
+
+        # Lưu câu hỏi vào DB (Giới hạn đúng số lượng yêu cầu)
+        db_questions = []
+        for i, q_data in enumerate(ai_questions[:req.total_questions]):
+            # Đảm bảo difficulty là int
+            diff = q_data.get("difficulty", 1)
+            if isinstance(diff, str):
+                if "dễ" in diff.lower(): diff = 1
+                elif "khó" in diff.lower(): diff = 3
+                else: diff = 2
+            
+            # Xử lý đáp án an toàn
+            raw_ans = str(q_data.get("correct_answer", "A")).strip().upper()
+            ans = raw_ans[0] if raw_ans else "A"
+
+            q = Question(
+                content=clean_math_formula(q_data.get("content", "Câu hỏi không có nội dung")),
+                option_a=clean_math_formula(q_data.get("option_a", "A")),
+                option_b=clean_math_formula(q_data.get("option_b", "B")),
+                option_c=clean_math_formula(q_data.get("option_c", "C")),
+                option_d=clean_math_formula(q_data.get("option_d", "D")),
+                correct_answer=ans,
+                explanation=clean_math_formula(q_data.get("explanation", "")),
+                difficulty=diff,
+                subject=req.subject,
+                grade=req.grade,
+                chapter=req.chapter,
+                knowledge_type=req.knowledge_type,
+                created_by=current_user.id
+            )
+            db.add(q)
+            db_questions.append(q)
+        
+        db.flush() 
+
+        # Tạo đề thi
+        exam = Exam(
+            title=req.title,
+            subject=req.subject,
+            grade=req.grade,
+            description=f"Đề thi AI tạo mới | Chủ đề: {req.topic} | {req.total_questions} câu",
+            time_limit=req.time_limit,
+            created_by=current_user.id,
+            is_published=True,
+        )
+        db.add(exam)
+        db.flush()
+
+        # Liên kết câu hỏi
+        for i, q in enumerate(db_questions):
+            link = ExamQuestion(exam_id=exam.id, question_id=q.id, question_order=i)
+            db.add(link)
+
+        db.commit()
+        db.refresh(exam)
+        return _exam_to_out(exam)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        print(f"Lỗi hệ thống trong generate_exam_ai: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Lỗi hệ thống: {str(e)}")
 
 @router.post("/manual", response_model=ExamOut, status_code=status.HTTP_201_CREATED)
 def create_exam_manual(

@@ -871,6 +871,7 @@ body {
 
 /* Cột Table & Utilities */
 .ce-col-check { width: 60px; text-align: center; }
+.ce-col-stt { width: 50px; text-align: center; }
 .ce-col-diff { width: 140px; text-align: center; }
 .ce-cell-center { text-align: center; vertical-align: middle; }
 .ce-checkbox-custom { accent-color: var(--cerulean); width: 16px; height: 16px; cursor: pointer; }
@@ -904,11 +905,6 @@ body {
 }
 .ce-submit-btn:hover:not(:disabled) { background: var(--jasper-hover); transform: translateY(-2px); cursor: pointer; }
 .ce-submit-btn:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; transform: none; }
-/* Cột Table & Utilities */
-.ce-col-check { width: 60px; text-align: center; }
-.ce-col-stt { width: 50px; text-align: center; } /* Class mới thêm cho cột STT */
-.ce-col-diff { width: 140px; text-align: center; }
-.ce-cell-center { text-align: center; vertical-align: middle; }
 
 /* Responsive Media Queries */
 @media (min-width: 768px) {

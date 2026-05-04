@@ -36,10 +36,21 @@ export default function QuestionBankPage() {
   };
 
   useEffect(() => { load(); }, [filter]);
+  useEffect(() => { knowledgeTypesApi.list().then(r => setKtOptions(r.data)); }, []);
 
   useEffect(() => {
-    knowledgeTypesApi.list().then(r => setKtOptions(r.data));
-  }, []);
+    // @ts-ignore
+    if (window.renderMathInElement) {
+      // @ts-ignore
+      window.renderMathInElement(document.body, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '$', right: '$', display: false },
+        ],
+        throwOnError: false
+      });
+    }
+  }, [questions, currentPage]);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 

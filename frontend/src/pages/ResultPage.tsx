@@ -38,6 +38,18 @@ export default function ResultPage() {
     submissionsApi.get(Number(id)).then(r => setSub(r.data)).finally(() => setLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    if ((window as any).renderMathInElement) {
+      (window as any).renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false },
+        ],
+        throwOnError: false
+      });
+    }
+  }, [sub, showAll, expanded]);
+
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
       <div className="spinner"></div>

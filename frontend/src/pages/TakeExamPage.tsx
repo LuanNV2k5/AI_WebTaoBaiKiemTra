@@ -26,6 +26,18 @@ export default function TakeExamPage() {
     }).catch(() => alert('Không tìm thấy đề thi')).finally(() => setLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    if ((window as any).renderMathInElement) {
+      (window as any).renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false },
+        ],
+        throwOnError: false
+      });
+    }
+  }, [exam, currentIdx, started]);
+
   const handleSubmit = useCallback(async () => {
     if (!exam || submitting) return;
     setSubmitting(true);

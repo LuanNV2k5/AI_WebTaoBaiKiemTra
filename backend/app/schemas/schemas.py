@@ -23,7 +23,7 @@ class UserOut(BaseModel):
     full_name: Optional[str]
     role: UserRole
     grade: Optional[int]
-    created_at: datetime
+    created_at: Optional[datetime]
 
     class Config:
         from_attributes = True
@@ -54,7 +54,7 @@ class QuestionCreate(BaseModel):
 class QuestionOut(QuestionCreate):
     id: int
     created_by: Optional[int]
-    created_at: datetime
+    created_at: Optional[datetime]
 
     class Config:
         from_attributes = True
@@ -70,6 +70,18 @@ class ExamGenerateRequest(BaseModel):
     difficulty_distribution: Optional[dict] = {"easy": 40, "medium": 40, "hard": 20}
     time_limit: int = 30  # phút
 
+class ExamGenerateAIRequest(BaseModel):
+    title: str
+    topic: str
+    subject: str = "Toán"
+    grade: int = 10
+    total_questions: int = 5
+    difficulty_distribution: Optional[dict] = {"easy": 40, "medium": 40, "hard": 20}
+    time_limit: int = 30
+    chapter: int = 1
+    knowledge_type: str = "concept"
+
+
 class ExamOut(BaseModel):
     id: int
     title: str
@@ -80,7 +92,7 @@ class ExamOut(BaseModel):
     total_questions: int
     is_published: bool
     created_by: Optional[int]
-    created_at: datetime
+    created_at: Optional[datetime]
     questions: list[QuestionOut] = []
 
     class Config:
@@ -93,7 +105,7 @@ class ExamListOut(BaseModel):
     grade: int
     time_limit: int
     total_questions: int
-    created_at: datetime
+    created_at: Optional[datetime]
 
     class Config:
         from_attributes = True
@@ -120,7 +132,7 @@ class SubmissionOut(BaseModel):
     score: float
     time_spent: int
     ai_feedback: Optional[str]
-    submitted_at: datetime
+    submitted_at: Optional[datetime]
     details: list[SubmissionDetailOut] = []
 
     class Config:
@@ -131,7 +143,7 @@ class SubmissionListOut(BaseModel):
     exam_id: int
     score: float
     time_spent: int
-    submitted_at: datetime
+    submitted_at: Optional[datetime]
 
     class Config:
         from_attributes = True

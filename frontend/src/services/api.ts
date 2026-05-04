@@ -49,6 +49,7 @@ export const examsApi = {
   list: (params?: { grade?: number }) => api.get('/exams', { params }),
   get: (id: number) => api.get(`/exams/${id}`),
   generate: (data: object) => api.post('/exams/generate', data),
+  generateAI: (data: object) => api.post('/exams/generate-ai', data, { timeout: 60000 }),
   createManual: (data: object) => api.post('/exams/manual', data),
   update: (id: number, data: object) => api.put(`/exams/${id}`, data),
   delete: (id: number) => api.delete(`/exams/${id}`),
