@@ -81,4 +81,4 @@ npm run dev
 ```
 
 ---
-*Báo cáo dự án Trắc nghiệm Toán học – Phiên bản 1.0*
+*Báo cáo dự án Trắc nghiệm Toán học*
